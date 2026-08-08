@@ -1,45 +1,32 @@
-# bibica-market-intelligence
-# 📊 BIBICA MARKET INTELLIGENCE 
-**Tối ưu hóa Biên lợi nhuận thông qua Chiến lược Cạnh tranh Bất xứng (Asymmetric Strategy)**
+BIBICA MARKET INTELLIGENCE 
 
-Kho lưu trữ này chứa toàn bộ Truy vấn SQL, Mã nguồn Python, Dữ liệu gốc (Raw Data) và Kế hoạch Thực thi (Go-to-market) được đội thi sử dụng để bóc tách thị trường và thiết lập chiến lược.
+Kho lưu trữ này tổng hợp dữ liệu gốc (Raw Data), mã nguồn truy vấn (SQL), kịch bản kiểm định (Python) và kế hoạch thực thi nhằm chứng minh tính khả thi cho các đề xuất chiến lược.
 
----
+1. CẤU TRÚC DỮ LIỆU
+Dữ liệu được tổ chức theo mô hình cơ sở dữ liệu quan hệ nhằm đảm bảo tính toàn vẹn:
+- dbo.products.csv: Bảng dữ liệu chính chứa thông tin giao dịch, sản lượng, giá bán và mức chiết khấu.
+- dbo.shop_info.csv: Bảng chứa thông tin phụ trợ (metadata) của các gian hàng.
+- Các file category: Hệ thống phân loại danh mục sản phẩm của nền tảng.
 
-## 📂 1. Cấu Trúc Dữ Liệu (Data Schema)
-Dữ liệu được trích xuất dưới dạng Cơ sở dữ liệu quan hệ (Relational DB) để đảm bảo tính toàn vẹn:
-* `dbo.products.csv`: Bảng sự kiện lõi chứa thông tin giao dịch, sản lượng, giá bán và chiết khấu.
-* `dbo.shop_info.csv`: Bảng chiều (Dimension table) chứa metadata của các gian hàng.
-* Các file `category`: Hệ thống sơ đồ cây danh mục chuẩn.
+2. TRUY VẾT CHỈ SỐ BẰNG SQL
+File thực thi: analyze_by_sql.sql
+Các chỉ số kinh doanh cốt lõi được trích xuất và đối soát trực tiếp từ dữ liệu gốc:
+- Tỷ trọng doanh thu (Pareto 80/20): Dòng sản phẩm Quasure (ngách y tế) chiếm 21.9% tổng số lượng SKU nhưng đóng góp 71.9% tổng doanh thu của gian hàng Bibica.
+- Phân tích hiệu quả giảm giá: Phân tích trên toàn thị trường cho thấy, nhóm sản phẩm giảm giá sâu (>40%) mang lại doanh thu trung bình 89.6 triệu/tháng. Trong khi đó, nhóm giữ giá tốt (chiết khấu <=40%) mang về 648 triệu/tháng (gấp 7.2 lần).
 
----
+3. KIỂM ĐỊNH THỐNG KÊ (OLS REGRESSION)
+File thực thi: hypothesis_testing.py
+Sử dụng mô hình Hồi quy OLS (thư viện Statsmodels - Python) để đo lường độ nhạy cảm về giá (Price Elasticity).
+- Kết quả kiểm định nhóm Quasure: p-value = 0.3216 (> 0.05).
+- Kết luận: Mức chiết khấu không có tác động có ý nghĩa thống kê đến sản lượng bán ra. Khách hàng ngách y tế có độ cầu không co giãn (Inelastic Demand) với yếu tố giá.
 
-## 🔍 2. Truy Vết Chỉ Số (SQL Data Validation)
-**File thực thi:** `analyze_by_sql.sql`
-Toàn bộ các chỉ số trọng yếu trên Slide báo cáo đều được truy vấn trực tiếp bằng SQL:
-* **Quy luật Pareto (80/20):** Dòng Quasure (ngách y tế) chỉ chiếm **21.9%** số lượng SKU nhưng gánh tới **71.9%** tổng doanh thu toàn gian hàng Bibica.
-* **Sự sụp đổ của Bẫy khối lượng (Volume Trap):** Nhóm giảm giá sâu (>40%) chỉ mang lại doanh thu trung bình **89.6M/tháng**, trong khi nhóm giữ giá tốt (<=40%) mang về **648M/tháng** (Gấp 7 lần).
+4. ĐỀ XUẤT CHIẾN LƯỢC
+Dựa trên kết quả kiểm định dữ liệu, nhóm đề xuất tập trung tối ưu lợi nhuận từ tệp khách hàng ngách thông qua 3 hành động:
+- Chính sách Giá tĩnh (Static Pricing): Giới hạn trần chiết khấu tối đa cho dòng Quasure ở mức 20%. Từ chối tham gia các chiến dịch giảm giá sâu nhằm bảo vệ biên lợi nhuận và định vị sản phẩm.
+- Tối ưu Giá trị đơn hàng (AOV): Dữ liệu cho thấy khách hàng có xu hướng mua tích trữ. Bibica cần tập trung đóng gói và truyền thông các mã Combo (2-3 hộp) thay vì giảm giá bán lẻ từng sản phẩm.
+- Chuyển dịch ngân sách (Budget Shift): Cắt giảm chi phí khuyến mãi để tái đầu tư vào việc xây dựng bằng chứng xã hội (Social Proof). Cụ thể: Đồng bộ hình ảnh sản phẩm (Thumbnail) gắn logo Chứng nhận Viện Dinh Dưỡng, tạo rào cản chất lượng so với sản phẩm đại trà.
 
----
-
-## 🧪 3. Kiểm Định Giả Thuyết (OLS Regression)
-**File thực thi:** `hypothesis_testing.py`
-Hệ thống sử dụng Hồi quy OLS (thư viện `Statsmodels` - Python) để đánh giá độ nhạy cảm về giá (Price Elasticity):
-* **🎯 TẦNG 2 (Ngách y tế Quasure - Trọng tâm): p-value = 0.3216 (> 0.05)**
-* **Kết luận Toán học:** Không có cơ sở để bác bỏ Giả thuyết Không (Fail to reject H0). Khách hàng mua Quasure vì niềm tin sức khỏe, hoàn toàn **vô cảm với giá (Inelastic Demand)**.
-
----
-
-## 💡 4. Giải Pháp Chiến Lược (Strategic Formulation)
-Rút toàn bộ nguồn lực khỏi cuộc đua Flash Sale vô nghĩa của đại dương đỏ, dồn hỏa lực chiếm lĩnh phân khúc chi tiêu phòng thủ thông qua 3 hành động:
-
-1. **Cơ chế Giá tĩnh (Static Pricing):** Thiết lập trần chiết khấu tối đa 20% cho dòng Hero SKUs (Quasure). Từ chối tham gia cuộc chiến phá giá để giữ nguyên vị thế cao cấp của sản phẩm dinh dưỡng y học.
-2. **Cấu trúc Bundle (Gộp gói sản phẩm):** Thuật toán tối ưu AOV (Giá trị đơn hàng). Không giảm giá bán lẻ, tập trung đóng gói Combo (2-3 hộp) để đánh trúng tâm lý mua tích trữ/biếu tặng.
-3. **Dịch chuyển Ngân sách (Budget Shift) & Social Proof:** Tái phân bổ 100% ngân sách khuyến mãi sang xây dựng Bằng chứng xã hội. Cụ thể: Đóng dấu mộc "Chứng nhận Viện Dinh Dưỡng" lên mọi Thumbnail, tạo rào cản chất lượng vô hình mà bánh kẹo đại trà nhiều đường không thể sao chép.
-
----
-
-## 🚀 5. Lộ Trình Triển Khai (Go-to-Market)
-* **Giai đoạn 1 (Tháng 1):** Tái cấu trúc nhận diện. Áp dụng chuẩn Thumbnail y tế & Khóa trần chiết khấu 20%.
-* **Giai đoạn 2 (Tháng 2):** Đẩy mạnh Combo. Dồn ngân sách hiển thị vào các mã Bundle (Giỏ quà biếu, Combo 3).
-* **Giai đoạn 3 (Tháng 3):** Đo lường & Phân phối. Tập trung phủ kênh Siêu thị (MT) và Nhà thuốc; thu hẹp kênh tạp hóa lẻ (GT).
+5. LỘ TRÌNH TRIỂN KHAI
+- Tháng 1: Tái cấu trúc nhận diện hình ảnh. Cập nhật hệ thống Thumbnail y tế và thiết lập trần chiết khấu 20%.
+- Tháng 2: Dồn ngân sách hiển thị vào các mã sản phẩm gộp (Giỏ quà biếu, Combo 3).
+- Tháng 3: Đo lường hiệu quả. Phủ sóng kênh Siêu thị (MT) và Nhà thuốc; giảm dần sự phụ thuộc vào kênh tạp hóa lẻ (GT).
