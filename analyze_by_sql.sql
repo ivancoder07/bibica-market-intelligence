@@ -79,12 +79,11 @@ GROUP BY
         ELSE 'Normal/Static Price (<=40%)' 
     END;
 
-
 -- ========================================================================
 -- SLIDE 6: CHIẾN LƯỢC TỐI ƯU AOV QUA BUNDLING (GỘP GÓI)
 -- ========================================================================
 
--- Q5: So sánh AOV và Tổng doanh thu giữa Bán lẻ và Combo (Dòng Quasure)
+-- Q5: So sánh AOV và Doanh thu trung bình/SKU giữa Bán lẻ và Combo (Dòng Quasure)
 WITH Quasure_Bundling AS (
     SELECT 
         item_id,
@@ -99,11 +98,10 @@ WITH Quasure_Bundling AS (
 )
 SELECT 
     product_type,
-    ROUND(AVG(price), 0) AS AOV, -- Result: 113k vs 143k
-    SUM(monthly_revenue) AS total_revenue
+    ROUND(AVG(price), 0) AS AOV, -- Result: 113,739 (Retail) vs 143,742 (Combo)
+    ROUND(AVG(monthly_revenue), 0) AS avg_revenue_per_sku -- Result: ~100,062,752 (100M) vs ~214,826,712 (214.8M)
 FROM Quasure_Bundling
 GROUP BY product_type;
-
 
 -- ========================================================================
 -- SLIDE 11: DATA VALIDATION & PRICE ELASTICITY
