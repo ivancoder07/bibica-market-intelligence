@@ -1,171 +1,146 @@
-/* 
+/*
 ===========================================================================
-BIBICA MARKET INTELLIGENCE - SQL DATA VALIDATION (VER 2.0 - AUDITED)
-Mục đích: Truy xuất và đối soát các chỉ số (Metrics) xuất hiện trên Slide.
-Tệp dữ liệu gốc: dbo.products.csv
+BIBICA MARKET INTELLIGENCE - SQL DATA VALIDATION (VER 3.0 - FULLY AUDITED)
+
 ===========================================================================
 */
 
+
+DECLARE @LatestDate DATE = (SELECT MAX([date]) FROM dbo.products WHERE country_code = 'vn');
+
+
 -- ========================================================================
--- SLIDE 3: QUY LUẬT 80/20 & VỊ THẾ BẤT XỨNG
+-- SLIDE 3: BUSINESS CONTEXT (The Data Paradox)
 -- ========================================================================
 
--- Q1: Dòng Quasure chiếm bao nhiêu phần trăm trong tổng số lượng SKU của Bibica? 
-WITH Bibica_SKU AS (
-    SELECT 
-        COUNT(item_id) AS total_bibica_skus,
-        SUM(CASE WHEN product_name LIKE '%Quasure%' THEN 1 ELSE 0 END) AS quasure_skus
-    FROM products
-    WHERE brand LIKE '%Bibica%' OR shop_name LIKE '%Bibica%'
+-- Q1 + Q2: Ty le SKU va doanh thu cua Quasure trong danh muc Bibica (Pareto donut)
+WITH Bibica_Latest AS (
+    SELECT *
+    FROM dbo.products
+    WHERE [date] = @LatestDate
+      AND country_code = 'vn'
+      AND shop_name LIKE '%Bibica%'
 )
-SELECT 
-    total_bibica_skus,
-    quasure_skus,
-    ROUND((quasure_skus * 100.0 / total_bibica_skus), 1) AS quasure_sku_percentage -- Result: 21.9%
-FROM Bibica_SKU;
+SELECT
+    COUNT(*)                                                            AS total_bibica_skus,
+    SUM(CASE WHEN product_name LIKE '%Quasure%' THEN 1 ELSE 0 END)      AS quasure_skus,
+    ROUND(SUM(CASE WHEN product_name LIKE '%Quasure%' THEN 1.0 ELSE 0 END)
+          * 100.0 / COUNT(*), 1)                                        AS quasure_sku_pct,          -- Expect: 21.9
+    ROUND(SUM(CASE WHEN product_name LIKE '%Quasure%'
+                    THEN price * TRY_CAST(monthly_sold_value AS FLOAT) ELSE 0 END)
+          * 100.0 / SUM(price * TRY_CAST(monthly_sold_value AS FLOAT)), 1)                 AS quasure_revenue_pct        -- Expect: 71.9
+FROM Bibica_Latest;
 
--- Q2: Doanh thu của dòng Quasure gánh bao nhiêu phần trăm tổng doanh thu Bibica?
-WITH Bibica_Revenue AS (
-    SELECT 
-        SUM(price * monthly_sold_value) AS total_revenue,
-        SUM(CASE WHEN product_name LIKE '%Quasure%' THEN price * monthly_sold_value ELSE 0 END) AS quasure_revenue
-    FROM products
-    WHERE brand LIKE '%Bibica%' OR shop_name LIKE '%Bibica%'
-)
-SELECT 
-    ROUND((quasure_revenue * 100.0 / total_revenue), 1) AS quasure_revenue_percentage -- Result: 71.9%
-FROM Bibica_Revenue;
+-- Q3: Chiet khau Quasure vs. doi thu truc tiep (Nestle Boost Glucose Control)
+SELECT
+    ROUND(AVG(CASE WHEN product_name LIKE '%Quasure%'      THEN TRY_CAST(discount_percent AS FLOAT) END), 1) AS quasure_avg_discount,        -- Expect: 20.0
+    ROUND(AVG(CASE WHEN product_name LIKE '%BOOST GLUCOSE%' THEN TRY_CAST(discount_percent AS FLOAT) END), 1) AS boost_glucose_avg_discount  -- Expect: 33.5
+FROM dbo.products
+WHERE [date] = @LatestDate
+  AND country_code = 'vn'
+  AND (product_name LIKE '%Quasure%' OR product_name LIKE '%BOOST GLUCOSE%');
 
--- Q3: Mức chiết khấu trung bình của Quasure so với Nestlé Boost Glucose Control
-SELECT 
-    'Quasure (Bibica)' AS segment,
-    ROUND(AVG(CAST(REPLACE(discount_percent, '%', '') AS FLOAT)), 1) AS avg_discount_percent
-FROM products
-WHERE product_name LIKE '%Quasure%' AND discount_percent IS NOT NULL
-UNION ALL
-SELECT 
-    'Boost Glucose Control (Nestlé)' AS segment,
-    ROUND(AVG(CAST(REPLACE(discount_percent, '%', '') AS FLOAT)), 1) AS avg_discount_percent
-FROM products
-WHERE product_name LIKE '%Glucose Control%' AND discount_percent IS NOT NULL;
 
 -- ========================================================================
--- SLIDE 4: SỰ SỤP ĐỔ CỦA BẪY KHỐI LƯỢNG (VOLUME TRAP)
--- ========================================================================
+-- SLIDE 4: COMPETITIVE MONITORING SYSTEM
+-- Q7 (SUPPORTING, v5): Top-5 SKU doi thu THAT SU cung phan khuc dinh duong
+-- y te (Boost Glucose Control) voi Quasure, sap theo chiet khau hien tai
+SELECT TOP 5
+    p.shop_name       AS competitor_name,
+    p.product_name    AS competitor_sku,
+    p.price,
+    TRY_CAST(p.discount_percent AS FLOAT) AS current_discount
+FROM dbo.products p
+WHERE p.[date] = @LatestDate
+  AND p.country_code = 'vn'
+  AND p.shop_name NOT LIKE '%Bibica%'
+  AND p.product_name LIKE '%GLUCOSE%'
+ORDER BY TRY_CAST(p.discount_percent AS FLOAT) DESC;
+-- Expect: 4 dong, toan bo la "Boost Glucose Control" (Nestlé Health Science),
+-- discount 35.0 / 33.0 / 33.0 / 33.0
 
--- Q4: Doanh thu trung bình nhóm giảm giá sâu (>40%) vs nhóm giữ giá (<=40%)?
--- Lưu ý: Đã loại bỏ Nestlé Health Science để tránh nhiễu Outlier ngành y tế.
-WITH Discount_Categorization AS (
-    SELECT 
-        item_id,
-        (price * monthly_sold_value) AS monthly_revenue,
-        CAST(REPLACE(discount_percent, '%', '') AS FLOAT) AS discount_val
-    FROM products
-    WHERE shop_name NOT LIKE '%Nestlé%' AND brand NOT LIKE '%Nestlé%' -- Data Cleaning
-)
-SELECT 
-    CASE 
-        WHEN discount_val > 40 THEN 'Deep Discount (>40%)'
-        ELSE 'Normal/Static Price (<=40%)' 
-    END AS discount_strategy,
-    COUNT(item_id) AS total_skus,
-    ROUND(AVG(monthly_revenue), 0) AS avg_monthly_revenue -- Result: 89.6M vs 648M
-FROM Discount_Categorization
-GROUP BY 
-    CASE 
-        WHEN discount_val > 40 THEN 'Deep Discount (>40%)'
-        ELSE 'Normal/Static Price (<=40%)' 
-    END;
+-- Q8 (SUPPORTING, v5): so SKU doi thu THAT SU cung phan khuc dinh duong y te
+-- dang giam gia >30% - nuoi logic "Action Threshold" (chenh lech >10 diem %
+-- thi kich hoat review gia)
+SELECT
+    N'Medical Nutrition Segment (Boost Glucose Control)' AS target_segment,
+    COUNT(DISTINCT p.item_id)                             AS competitor_skus_over_30pct,
+    ROUND(AVG(TRY_CAST(p.discount_percent AS FLOAT)), 1)  AS avg_aggressive_discount
+FROM dbo.products p
+WHERE p.[date] = @LatestDate
+  AND p.country_code = 'vn'
+  AND p.shop_name NOT LIKE '%Bibica%'
+  AND p.product_name LIKE '%GLUCOSE%'
+  AND TRY_CAST(p.discount_percent AS FLOAT) > 30;
+-- Expect: competitor_skus_over_30pct = 4, avg_aggressive_discount = 33.5
+-- (ca 4/4 SKU doi thu that trong phan khuc nay deu dang giam >30% - cang
+-- cung co luan diem "doi thu buoc phai giam sau, Bibica thi khong")
 
--- ========================================================================
--- SLIDE 6: CHIẾN LƯỢC TỐI ƯU AOV QUA BUNDLING (GỘP GÓI)
--- ========================================================================
-
--- Q5: So sánh AOV và Doanh thu trung bình/SKU giữa Bán lẻ và Combo (Dòng Quasure)
-WITH Quasure_Bundling AS (
-    SELECT 
-        item_id,
-        price,
-        (price * monthly_sold_value) AS monthly_revenue,
-        CASE 
-            WHEN product_name LIKE '%Combo%' OR product_name LIKE '%Hộp%' OR product_name LIKE '%Lốc%' THEN 'Bundle/Combo'
-            ELSE 'Retail/Single' 
-        END AS product_type
-    FROM products
-    WHERE product_name LIKE '%Quasure%'
-)
-SELECT 
-    product_type,
-    ROUND(AVG(price), 0) AS AOV, -- Result: 113,739 (Retail) vs 143,742 (Combo)
-    ROUND(AVG(monthly_revenue), 0) AS avg_revenue_per_sku -- Result: ~100,062,752 (100M) vs ~214,826,712 (214.8M)
-FROM Quasure_Bundling
-GROUP BY product_type;
 
 -- ========================================================================
--- SLIDE 11: DATA VALIDATION & PRICE ELASTICITY
+-- SLIDE 5: PRODUCT MATCHING MATRIX (Bubble Chart)
 -- ========================================================================
 
--- Q6: Sản lượng bán dòng Quasure theo mốc chiết khấu 15%
-WITH Quasure_Volume AS (
-    SELECT 
-        item_id,
-        monthly_sold_value,
-        CAST(REPLACE(discount_percent, '%', '') AS FLOAT) AS discount_val
-    FROM products
-    WHERE product_name LIKE '%Quasure%'
-)
-SELECT 
-    CASE 
-        WHEN discount_val <= 15 THEN 'Low Discount (<= 15%)'
-        ELSE 'High Discount (> 15%)' 
-    END AS discount_tier,
-    COUNT(item_id) AS sku_count,
-    ROUND(AVG(monthly_sold_value), 0) AS avg_monthly_sold_volume -- Result: 2527 vs 1387
-FROM Quasure_Volume
-GROUP BY 
-    CASE 
-        WHEN discount_val <= 15 THEN 'Low Discount (<= 15%)'
-        ELSE 'High Discount (> 15%)' 
-    END;
+SELECT
+    CASE WHEN product_name LIKE '%Quasure%'       THEN 'Quasure'
+         WHEN product_name LIKE '%BOOST GLUCOSE%' THEN 'Boost Glucose Control'
+         WHEN product_name LIKE '%BOOST OPTIMUM%' THEN 'Boost Optimum' END AS product_line,
+    COUNT(*)                              AS n_sku,               -- Expect: 21 / 4 / 7
+    ROUND(AVG(TRY_CAST(discount_percent AS FLOAT)), 1)       AS avg_discount_pct,    -- Expect: 20.0 / 33.5 / 32.1
+    SUM(TRY_CAST(monthly_sold_value AS FLOAT))               AS total_monthly_volume,-- Expect: 32,539 / 814 / 2,580
+    ROUND(SUM(price * TRY_CAST(monthly_sold_value AS FLOAT)), 0) AS total_monthly_revenue, -- Expect: 3,937,541,281 / 357,247,680 / 1,240,676,936
+    SUM(rating_count)                     AS total_reviews        -- Expect: 12,547 / 90 / 894
+FROM dbo.products
+WHERE [date] = @LatestDate
+  AND country_code = 'vn'
+  AND (product_name LIKE '%Quasure%' OR product_name LIKE '%BOOST GLUCOSE%' OR product_name LIKE '%BOOST OPTIMUM%')
+GROUP BY CASE WHEN product_name LIKE '%Quasure%'       THEN 'Quasure'
+              WHEN product_name LIKE '%BOOST GLUCOSE%' THEN 'Boost Glucose Control'
+              WHEN product_name LIKE '%BOOST OPTIMUM%' THEN 'Boost Optimum' END;
 
--- Q7: Xuất bảng so sánh 6 chỉ số cốt lõi giữa Quasure và các dòng Nestlé Boost
-WITH Segments AS (
-    SELECT 
-        CASE 
-            WHEN product_name LIKE '%Quasure%' THEN '1. Quasure (Bibica)'
-            WHEN product_name LIKE '%Glucose Control%' THEN '2. Boost Glucose Control (Direct)'
-            WHEN product_name LIKE '%Optimum%' THEN '3. Boost Optimum (Indirect)'
-            ELSE 'Other'
-        END AS product_group,
-        item_id,
-        price,
-        CAST(REPLACE(discount_percent, '%', '') AS FLOAT) AS discount_num,
-        monthly_sold_value,
-        (price * monthly_sold_value) AS monthly_revenue,
-        CAST(rating_count AS INT) AS total_reviews
-    FROM products
-    WHERE product_name LIKE '%Quasure%' 
-       OR product_name LIKE '%Glucose Control%' 
-       OR product_name LIKE '%Optimum%'
-)
-SELECT 
-    product_group,
-    COUNT(item_id) AS number_of_skus,
-    ROUND(AVG(price), 0) AS average_price,
-    ROUND(AVG(discount_num), 1) AS avg_discount_percent,
-    SUM(monthly_sold_value) AS total_monthly_volume,
-    SUM(monthly_revenue) AS total_monthly_revenue,
-    SUM(total_reviews) AS total_review_count
-FROM Segments
-WHERE product_group != 'Other'
-GROUP BY product_group
-ORDER BY product_group;
- 
--- Q8: Quét các SKU của đối thủ trực tiếp đang giảm giá > 30% (Vượt Action Threshold 10% so với trần 20% của Bibica)
-SELECT 
-    'Nestlé Boost Glucose Control' AS target_segment,
-    COUNT(item_id) AS total_competitor_skus_alert,
-    ROUND(AVG(CAST(REPLACE(discount_percent, '%', '') AS FLOAT)), 1) AS avg_aggressive_discount
-FROM products
-WHERE product_name LIKE '%Glucose Control%'
-  AND CAST(REPLACE(discount_percent, '%', '') AS FLOAT) > 30;
+
+
+-- ========================================================================
+-- SLIDE 6: DATA INSIGHTS (The Collapse of the Volume Trap)
+-- ========================================================================
+
+-- Q4: Doanh thu TB nhom giam gia sau (>40%) vs giu gia ky luat (<=40%),
+-- loai Nestle Health Science (outlier) VA loai ca Bibica (slide mo ta hanh
+-- vi THI TRUONG can phan ung, khong phai chinh Bibica)
+SELECT
+    CASE WHEN TRY_CAST(discount_percent AS FLOAT) > 40 THEN 'Deep Discount (>40%)'
+         ELSE 'Disciplined Pricing (<=40%)' END        AS discount_strategy,
+    COUNT(*)                                            AS total_skus,       -- Expect: 26 / 436
+    ROUND(AVG(price * TRY_CAST(monthly_sold_value AS FLOAT)), 0)           AS avg_monthly_revenue -- Expect: 89,658,938 / 648,334,417
+FROM dbo.products
+WHERE [date] = @LatestDate
+  AND country_code = 'vn'
+  AND shop_name NOT LIKE '%Nestlé Health Science%'
+  AND shop_name NOT LIKE '%Bibica%'
+  AND TRY_CAST(discount_percent AS FLOAT) IS NOT NULL
+GROUP BY CASE WHEN TRY_CAST(discount_percent AS FLOAT) > 40 THEN 'Deep Discount (>40%)'
+              ELSE 'Disciplined Pricing (<=40%)' END;
+
+
+-- ========================================================================
+-- SLIDE 8: STRATEGIC SOLUTIONS I & II (Static Pricing & Bundling)
+-- ========================================================================
+
+-- Q5: Retail vs. Combo AOV va doanh thu TB/SKU, chi dong Quasure. Chi khop
+-- tu khoa "Combo" (KHONG dung "Hop"/"Loc" vi de nham hop qua tang don le
+-- thanh combo). Loai SKU qua tang khong ban.
+SELECT
+    CASE WHEN product_name LIKE '%Combo%' THEN 'Bundle/Combo' ELSE 'Retail/Single' END AS product_type,
+    COUNT(*)                                    AS n_sku,           -- Expect: 16 / 5
+    ROUND(AVG(price), 0)                        AS aov,             -- Expect: 143,742 / 113,739
+    ROUND(AVG(price * TRY_CAST(monthly_sold_value AS FLOAT)), 0)   AS avg_revenue_per_sku -- Expect: 214,826,719 / 100,062,756
+FROM dbo.products
+WHERE [date] = @LatestDate
+  AND country_code = 'vn'
+  AND product_name LIKE '%Quasure%'
+  AND product_name NOT LIKE '%không bán%'
+  AND product_name NOT LIKE '%khong ban%'
+GROUP BY CASE WHEN product_name LIKE '%Combo%' THEN 'Bundle/Combo' ELSE 'Retail/Single' END;
+
+
+
