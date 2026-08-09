@@ -129,3 +129,59 @@ GROUP BY
         WHEN discount_val <= 15 THEN 'Low Discount (<= 15%)'
         ELSE 'High Discount (> 15%)' 
     END;
+
+-- Q7: Top 5 SKU doi thu cung danh muc voi Quasure, dang chiet khau manh nhat
+WITH quasure_category AS (
+    SELECT DISTINCT catid, country_code
+    FROM dbo.product
+    WHERE product_name LIKE N'%Quasure%'
+),
+latest_snapshot AS (
+    SELECT p.*,
+           ROW_NUMBER() OVER (PARTITION BY p.item_id ORDER BY p.snapshot_date DESC) AS rn
+    FROM dbo.product p
+    INNER JOIN quasure_category qc
+        ON p.catid = qc.catid AND p.country_code = qc.country_code
+),
+competitor_products AS (
+    SELECT
+        s.shop_name       AS competitor_name,
+        ls.product_name    AS competitor_sku,
+        ls.price,
+        ls.discount_percent AS current_discount
+    FROM latest_snapshot ls
+    INNER JOIN dbo.shop s ON ls.shop_id = s.shop_id
+    WHERE ls.rn = 1                              -- chi lay ban ghi moi nhat/SKU
+      AND s.shop_name NOT LIKE N'%Bibica%'        -- loai tru hang noi bo
+)
+SELECT TOP 5
+    competitor_name,
+    competitor_sku,
+    price,
+    current_discount
+FROM competitor_products
+ORDER BY current_discount DESC;
+ 
+ 
+-- Q8: So SKU doi thu cung phan khuc Quasure dang giam gia > 30%
+WITH quasure_category AS (
+    SELECT DISTINCT catid, country_code
+    FROM dbo.product
+    WHERE product_name LIKE N'%Quasure%'
+),
+latest_snapshot AS (
+    SELECT p.*,
+           ROW_NUMBER() OVER (PARTITION BY p.item_id ORDER BY p.snapshot_date DESC) AS rn
+    FROM dbo.product p
+    INNER JOIN quasure_category qc
+        ON p.catid = qc.catid AND p.country_code = qc.country_code
+)
+SELECT
+    N'Ngach Y te (Quasure Category)' AS target_segment,
+    COUNT(DISTINCT ls.item_id)        AS total_competitor_skus_alert,  -- dem theo SKU, khong dem theo ngay
+    ROUND(AVG(ls.discount_percent), 1) AS avg_aggressive_discount
+FROM latest_snapshot ls
+INNER JOIN dbo.shop s ON ls.shop_id = s.shop_id
+WHERE ls.rn = 1
+  AND s.shop_name NOT LIKE N'%Bibica%'
+  AND ls.discount_percent > 30;
