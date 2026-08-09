@@ -36,20 +36,18 @@ SELECT
     ROUND((quasure_revenue * 100.0 / total_revenue), 1) AS quasure_revenue_percentage -- Result: 71.9%
 FROM Bibica_Revenue;
 
--- Q3: Mức chiết khấu trung bình của Bibica so với đối thủ cạnh tranh trực tiếp (Richy)
+-- Q3: Mức chiết khấu trung bình của Quasure so với Nestlé Boost Glucose Control
 SELECT 
-    'Bibica' AS segment,
-    ROUND(AVG(CAST(REPLACE(discount_percent, '%', '') AS FLOAT)), 1) AS avg_discount_percent -- Result: 16.0%
+    'Quasure (Bibica)' AS segment,
+    ROUND(AVG(CAST(REPLACE(discount_percent, '%', '') AS FLOAT)), 1) AS avg_discount_percent
 FROM products
-WHERE (brand LIKE '%Bibica%' OR shop_name LIKE '%Bibica%') 
-  AND discount_percent IS NOT NULL
+WHERE product_name LIKE '%Quasure%' AND discount_percent IS NOT NULL
 UNION ALL
 SELECT 
-    'Richy (Benchmark)' AS segment,
-    ROUND(AVG(CAST(REPLACE(discount_percent, '%', '') AS FLOAT)), 1) AS avg_discount_percent -- Result: ~28.1% - 29.1%
+    'Boost Glucose Control (Nestlé)' AS segment,
+    ROUND(AVG(CAST(REPLACE(discount_percent, '%', '') AS FLOAT)), 1) AS avg_discount_percent
 FROM products
-WHERE brand LIKE '%Richy%' AND discount_percent IS NOT NULL;
-
+WHERE product_name LIKE '%Glucose Control%' AND discount_percent IS NOT NULL;
 
 -- ========================================================================
 -- SLIDE 4: SỰ SỤP ĐỔ CỦA BẪY KHỐI LƯỢNG (VOLUME TRAP)
@@ -130,58 +128,44 @@ GROUP BY
         ELSE 'High Discount (> 15%)' 
     END;
 
--- Q7: Top 5 SKU doi thu cung danh muc voi Quasure, dang chiet khau manh nhat
-WITH quasure_category AS (
-    SELECT DISTINCT catid, country_code
-    FROM dbo.product
-    WHERE product_name LIKE N'%Quasure%'
-),
-latest_snapshot AS (
-    SELECT p.*,
-           ROW_NUMBER() OVER (PARTITION BY p.item_id ORDER BY p.snapshot_date DESC) AS rn
-    FROM dbo.product p
-    INNER JOIN quasure_category qc
-        ON p.catid = qc.catid AND p.country_code = qc.country_code
-),
-competitor_products AS (
-    SELECT
-        s.shop_name       AS competitor_name,
-        ls.product_name    AS competitor_sku,
-        ls.price,
-        ls.discount_percent AS current_discount
-    FROM latest_snapshot ls
-    INNER JOIN dbo.shop s ON ls.shop_id = s.shop_id
-    WHERE ls.rn = 1                              -- chi lay ban ghi moi nhat/SKU
-      AND s.shop_name NOT LIKE N'%Bibica%'        -- loai tru hang noi bo
+-- Q7: Xuất bảng so sánh 6 chỉ số cốt lõi giữa Quasure và các dòng Nestlé Boost
+WITH Segments AS (
+    SELECT 
+        CASE 
+            WHEN product_name LIKE '%Quasure%' THEN '1. Quasure (Bibica)'
+            WHEN product_name LIKE '%Glucose Control%' THEN '2. Boost Glucose Control (Direct)'
+            WHEN product_name LIKE '%Optimum%' THEN '3. Boost Optimum (Indirect)'
+            ELSE 'Other'
+        END AS product_group,
+        item_id,
+        price,
+        CAST(REPLACE(discount_percent, '%', '') AS FLOAT) AS discount_num,
+        monthly_sold_value,
+        (price * monthly_sold_value) AS monthly_revenue,
+        CAST(rating_count AS INT) AS total_reviews
+    FROM products
+    WHERE product_name LIKE '%Quasure%' 
+       OR product_name LIKE '%Glucose Control%' 
+       OR product_name LIKE '%Optimum%'
 )
-SELECT TOP 5
-    competitor_name,
-    competitor_sku,
-    price,
-    current_discount
-FROM competitor_products
-ORDER BY current_discount DESC;
+SELECT 
+    product_group,
+    COUNT(item_id) AS number_of_skus,
+    ROUND(AVG(price), 0) AS average_price,
+    ROUND(AVG(discount_num), 1) AS avg_discount_percent,
+    SUM(monthly_sold_value) AS total_monthly_volume,
+    SUM(monthly_revenue) AS total_monthly_revenue,
+    SUM(total_reviews) AS total_review_count
+FROM Segments
+WHERE product_group != 'Other'
+GROUP BY product_group
+ORDER BY product_group;
  
- 
--- Q8: So SKU doi thu cung phan khuc Quasure dang giam gia > 30%
-WITH quasure_category AS (
-    SELECT DISTINCT catid, country_code
-    FROM dbo.product
-    WHERE product_name LIKE N'%Quasure%'
-),
-latest_snapshot AS (
-    SELECT p.*,
-           ROW_NUMBER() OVER (PARTITION BY p.item_id ORDER BY p.snapshot_date DESC) AS rn
-    FROM dbo.product p
-    INNER JOIN quasure_category qc
-        ON p.catid = qc.catid AND p.country_code = qc.country_code
-)
-SELECT
-    N'Ngach Y te (Quasure Category)' AS target_segment,
-    COUNT(DISTINCT ls.item_id)        AS total_competitor_skus_alert,  -- dem theo SKU, khong dem theo ngay
-    ROUND(AVG(ls.discount_percent), 1) AS avg_aggressive_discount
-FROM latest_snapshot ls
-INNER JOIN dbo.shop s ON ls.shop_id = s.shop_id
-WHERE ls.rn = 1
-  AND s.shop_name NOT LIKE N'%Bibica%'
-  AND ls.discount_percent > 30;
+-- Q8: Quét các SKU của đối thủ trực tiếp đang giảm giá > 30% (Vượt Action Threshold 10% so với trần 20% của Bibica)
+SELECT 
+    'Nestlé Boost Glucose Control' AS target_segment,
+    COUNT(item_id) AS total_competitor_skus_alert,
+    ROUND(AVG(CAST(REPLACE(discount_percent, '%', '') AS FLOAT)), 1) AS avg_aggressive_discount
+FROM products
+WHERE product_name LIKE '%Glucose Control%'
+  AND CAST(REPLACE(discount_percent, '%', '') AS FLOAT) > 30;
