@@ -34,16 +34,11 @@ pip install -r requirement.txt
 ``` bash
 python master_pipeline.py
 ```
-Kết quả đẩu ra:
-4. Kết quả Đầu ra
+## 4. Kết quả Đầu ra
 Khi hệ thống thực thi thành công, Terminal sẽ tự động kết xuất các thông số sau:
 
-Model Diagnostics: Báo cáo số lượng bản ghi dữ liệu đã được làm sạch, hệ số tin cậy (R-Squared) và sai số toàn phương trung bình (MSE).
-
-Dynamic Action Threshold: Tự động trích xuất Điểm Đứt Gãy (%) chính xác từ bộ dữ liệu.
-
-Visual Report: Tự động kết xuất sơ đồ Cây Quyết Định và lưu thành file ảnh Phan_Tich_Diem_Dut_Gay.png tại thư mục hiện tại.
-
-System Simulation: Giả lập hệ thống cảnh báo (gọi API Zalo nội bộ / đẩy sản phẩm trên API sàn thương mại điện tử) khi phát hiện đối thủ vi phạm ngưỡng giá.
-
+1. **Model Diagnostics:** Báo cáo số lượng bản ghi dữ liệu đã được làm sạch, hệ số tin cậy (R-Squared) và sai số toàn phương trung bình (MSE).
+2. **Dynamic Action Threshold:** Tự động trích xuất Điểm Đứt Gãy (%) chính xác từ bộ dữ liệu.
+3. **Visual Report:** Tự động kết xuất sơ đồ Cây Quyết Định và lưu thành file ảnh `Phan_Tich_Diem_Dut_Gay.png` tại thư mục hiện tại.
+4. **System Simulation:** Giả lập hệ thống cảnh báo (gọi API Zalo nội bộ / đẩy sản phẩm trên API sàn thương mại điện tử) khi phát hiện đối thủ vi phạm ngưỡng giá.
 
