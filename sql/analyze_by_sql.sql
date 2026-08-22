@@ -141,6 +141,43 @@ WHERE [date] = @LatestDate
   AND product_name NOT LIKE '%không bán%'
   AND product_name NOT LIKE '%khong ban%'
 GROUP BY CASE WHEN product_name LIKE '%Combo%' THEN 'Bundle/Combo' ELSE 'Retail/Single' END;
+-- TRUY VẤN TÌM ĐIỂM ĐỨT GÃY SẢN LƯỢNG (TIPPING POINT ANALYSIS)
+SELECT 
+    CASE 
+        -- Ép cột discount_percent thành FLOAT trước khi so sánh
+        WHEN CAST(discount_percent AS FLOAT) BETWEEN 0 AND 5 THEN '1. 0% - 5%'
+        WHEN CAST(discount_percent AS FLOAT) > 5 AND CAST(discount_percent AS FLOAT) <= 10 THEN '2. 6% - 10%'
+        WHEN CAST(discount_percent AS FLOAT) > 10 AND CAST(discount_percent AS FLOAT) <= 15 THEN '3. 11% - 15%'
+        WHEN CAST(discount_percent AS FLOAT) > 15 AND CAST(discount_percent AS FLOAT) <= 20 THEN '4. 16% - 20%'
+        WHEN CAST(discount_percent AS FLOAT) > 20 AND CAST(discount_percent AS FLOAT) <= 25 THEN '5. 21% - 25%'
+        WHEN CAST(discount_percent AS FLOAT) > 25 AND CAST(discount_percent AS FLOAT) <= 30 THEN '6. 26% - 30%'
+        WHEN CAST(discount_percent AS FLOAT) > 30 THEN '7. > 30%'
+        ELSE 'Không xác định'
+    END AS discount_range,
+    
+    COUNT(item_id) AS total_products, 
+    -- Ép cột monthly_sold_value thành FLOAT để tính tổng
+    SUM(CAST(monthly_sold_value AS FLOAT)) AS total_sales_volume, 
+    -- Ép cột price thành FLOAT để tính trung bình
+    ROUND(AVG(CAST(price AS FLOAT)), 0) AS average_price 
+    
+FROM 
+    dbo.products 
+WHERE 
+    product_name LIKE '%Bibica%' OR product_name LIKE '%Quasure%' 
+GROUP BY 
+    CASE 
+        WHEN CAST(discount_percent AS FLOAT) BETWEEN 0 AND 5 THEN '1. 0% - 5%'
+        WHEN CAST(discount_percent AS FLOAT) > 5 AND CAST(discount_percent AS FLOAT) <= 10 THEN '2. 6% - 10%'
+        WHEN CAST(discount_percent AS FLOAT) > 10 AND CAST(discount_percent AS FLOAT) <= 15 THEN '3. 11% - 15%'
+        WHEN CAST(discount_percent AS FLOAT) > 15 AND CAST(discount_percent AS FLOAT) <= 20 THEN '4. 16% - 20%'
+        WHEN CAST(discount_percent AS FLOAT) > 20 AND CAST(discount_percent AS FLOAT) <= 25 THEN '5. 21% - 25%'
+        WHEN CAST(discount_percent AS FLOAT) > 25 AND CAST(discount_percent AS FLOAT) <= 30 THEN '6. 26% - 30%'
+        WHEN CAST(discount_percent AS FLOAT) > 30 THEN '7. > 30%'
+        ELSE 'Không xác định'
+    END
+ORDER BY 
+    discount_range ASC;
 
 
 
