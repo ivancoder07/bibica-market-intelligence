@@ -17,5 +17,5 @@ Follow these steps to configure the environment locally:
 
 \*\*Step 1: Clone the repository\*\*  
 \`\`\`bash  
-git clone \[https://github.com/\](https://github.com/)\[YOUR\_USERNAME\]/bibica-market-intelligence.git  
+git clone \[https://github.com/\](https://github.com/)\ivancoder07/bibica-market-intelligence.git  
 cd bibica-market-intelligence  
