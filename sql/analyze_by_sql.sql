@@ -1,6 +1,6 @@
 /*
 ===========================================================================
-BIBICA MARKET INTELLIGENCE - SQL DATA VALIDATION (VER 3.0 - FULLY AUDITED)
+BIBICA MARKET INTELLIGENCE - SQL DATA VALIDATION
 
 ===========================================================================
 */
