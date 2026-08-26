@@ -181,3 +181,32 @@ ORDER BY
 
 
 
+
+-- ========================================================================
+-- SLIDE 4: BUSINESS CONTEXT (So sánh độ sâu chiết khấu)
+-- ========================================================================
+SELECT 
+    ROUND(AVG(CASE WHEN shop_name LIKE '%Bibica%' THEN TRY_CAST(discount_percent AS FLOAT) END), 1) AS bibica_avg_discount,
+    ROUND(AVG(CASE WHEN shop_name NOT LIKE '%Bibica%' THEN TRY_CAST(discount_percent AS FLOAT) END), 1) AS market_avg_discount
+FROM dbo.products
+WHERE country_code = 'vn'
+  AND [date] = @LatestDate;
+
+
+-- ========================================================================
+-- SLIDE 17 (APPENDIX 1): Tác động của chiết khấu đến sản lượng bán Quasure
+-- ========================================================================
+SELECT 
+    CASE WHEN TRY_CAST(discount_percent AS FLOAT) <= 15 THEN '<= 15%' 
+         ELSE '> 15%' END AS discount_group,
+    COUNT(item_id) AS total_skus,
+    ROUND(AVG(TRY_CAST(monthly_sold_value AS FLOAT)), 0) AS avg_monthly_sold
+FROM dbo.products
+WHERE country_code = 'vn'
+  AND product_name LIKE '%Quasure%'
+  AND [date] = @LatestDate
+GROUP BY CASE WHEN TRY_CAST(discount_percent AS FLOAT) <= 15 THEN '<= 15%' 
+              ELSE '> 15%' END;
+
+
+
