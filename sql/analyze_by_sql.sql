@@ -7,11 +7,53 @@ BIBICA MARKET INTELLIGENCE - SQL DATA VALIDATION
 
 
 DECLARE @LatestDate DATE = (SELECT MAX([date]) FROM dbo.products WHERE country_code = 'vn');
-
-
 -- ========================================================================
--- SLIDE 3: BUSINESS CONTEXT (The Data Paradox)
+-- Bằng chứng của một thị trường đang chạy đua về sản lượng (chạy đua về chiết khấu)
 -- ========================================================================
+-- ========================================================================
+-- BẰNG CHỨNG 1: SỰ TẬP TRUNG CỦA CÁC MÃ SKU Ở VÙNG "CẮT MÁU"
+-- (Đếm số lượng SKU Non-Bibica theo từng vùng chiết khấu)
+-- ========================================================================
+SELECT 
+    CASE 
+        WHEN TRY_CAST(discount_percent AS FLOAT) <= 5 THEN '1. Vùng 0-5%'
+        WHEN TRY_CAST(discount_percent AS FLOAT) > 5 AND TRY_CAST(discount_percent AS FLOAT) <= 15 THEN '2. Vùng 6-15%'
+        WHEN TRY_CAST(discount_percent AS FLOAT) > 15 AND TRY_CAST(discount_percent AS FLOAT) <= 25 THEN '3. Vùng 16-25%'
+        WHEN TRY_CAST(discount_percent AS FLOAT) > 25 AND TRY_CAST(discount_percent AS FLOAT) <= 35 THEN '4. Vùng 26-35%'
+        WHEN TRY_CAST(discount_percent AS FLOAT) > 35 AND TRY_CAST(discount_percent AS FLOAT) <= 45 THEN '5. Vùng 36-45%'
+        WHEN TRY_CAST(discount_percent AS FLOAT) > 45 THEN '6. Vùng > 45%'
+        ELSE 'Không xác định'
+    END AS [Vùng Chiết Khấu],
+    COUNT(item_id) AS [Số lượng SKU]
+FROM dbo.products
+WHERE country_code = 'vn'
+  AND (brand IS NULL OR brand NOT LIKE '%Bibica%') 
+  AND (product_name IS NULL OR product_name NOT LIKE '%Bibica%')
+GROUP BY 
+    CASE 
+        WHEN TRY_CAST(discount_percent AS FLOAT) <= 5 THEN '1. Vùng 0-5%'
+        WHEN TRY_CAST(discount_percent AS FLOAT) > 5 AND TRY_CAST(discount_percent AS FLOAT) <= 15 THEN '2. Vùng 6-15%'
+        WHEN TRY_CAST(discount_percent AS FLOAT) > 15 AND TRY_CAST(discount_percent AS FLOAT) <= 25 THEN '3. Vùng 16-25%'
+        WHEN TRY_CAST(discount_percent AS FLOAT) > 25 AND TRY_CAST(discount_percent AS FLOAT) <= 35 THEN '4. Vùng 26-35%'
+        WHEN TRY_CAST(discount_percent AS FLOAT) > 35 AND TRY_CAST(discount_percent AS FLOAT) <= 45 THEN '5. Vùng 36-45%'
+        WHEN TRY_CAST(discount_percent AS FLOAT) > 45 THEN '6. Vùng > 45%'
+        ELSE 'Không xác định'
+    END
+ORDER BY [Vùng Chiết Khấu] ASC;
+-- ========================================================================
+-- BẰNG CHỨNG 2: TOP 10 SẢN PHẨM BÁN CHẠY NHẤT VÀ MỨC CHIẾT KHẤU
+-- (Trích xuất 10 sản phẩm Non-Bibica có sản lượng bán ra cao nhất)
+-- ========================================================================
+SELECT TOP 10
+    product_name AS [Tên Sản Phẩm],
+    TRY_CAST(discount_percent AS FLOAT) AS [Mức Chiết Khấu (%)],
+    TRY_CAST(monthly_sold_value AS FLOAT) AS [Sản Lượng Bán (hộp/tháng)]
+FROM dbo.products
+WHERE country_code = 'vn'
+  AND (brand IS NULL OR brand NOT LIKE '%Bibica%') 
+  AND (product_name IS NULL OR product_name NOT LIKE '%Bibica%')
+ORDER BY TRY_CAST(monthly_sold_value AS FLOAT) DESC;
+
 
 -- Q1 + Q2: Ty le SKU va doanh thu cua Quasure trong danh muc Bibica (Pareto donut)
 WITH Bibica_Latest AS (
