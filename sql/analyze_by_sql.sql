@@ -1,49 +1,59 @@
 /*
 ===========================================================================
-BIBICA MARKET INTELLIGENCE - SQL DATA VALIDATION
-
+PROJECT: BIBICA MARKET INTELLIGENCE
+DESCRIPTION: Hệ thống truy xuất và kiểm chứng dữ liệu, phục vụ phân tích 
+             chiến lược giá tĩnh, tối ưu hóa AOV và đo lường rủi ro thị trường.
 ===========================================================================
 */
 
-
+-- Thiết lập mốc thời gian phân tích dựa trên dữ liệu mới nhất của thị trường VN
 DECLARE @LatestDate DATE = (SELECT MAX([date]) FROM dbo.products WHERE country_code = 'vn');
--- ========================================================================
--- Bằng chứng của một thị trường đang chạy đua về sản lượng (chạy đua về chiết khấu)
--- ========================================================================
--- ========================================================================
--- BẰNG CHỨNG 1: SỰ TẬP TRUNG CỦA CÁC MÃ SKU Ở VÙNG "CẮT MÁU"
--- (Đếm số lượng SKU Non-Bibica theo từng vùng chiết khấu)
--- ========================================================================
+
+/*
+===========================================================================
+PHẦN 1: BỐI CẢNH THỊ TRƯỜNG & VỊ THẾ CẠNH TRANH (SLIDE 4 & 5)
+===========================================================================
+*/
+
+-- 1.1 Kiểm định quy luật Pareto (80/20): Tương quan đối lập giữa Quasure và phần còn lại của Bibica
+WITH Bibica_Latest AS (
+    SELECT 
+        item_id,
+        product_name,
+        TRY_CAST(price AS FLOAT) * TRY_CAST(monthly_sold_value AS FLOAT) AS revenue
+    FROM dbo.products
+    WHERE [date] = @LatestDate
+      AND country_code = 'vn'
+      AND (shop_name LIKE '%Bibica%' OR brand LIKE '%Bibica%')
+)
+SELECT
+    -- 1. TỔNG QUAN DANH MỤC BIBICA
+    COUNT(item_id) AS total_bibica_skus,
+    SUM(revenue) AS total_bibica_revenue,
+
+    -- 2. NHÓM SẢN PHẨM CHỦ LỰC (QUASURE)
+    SUM(CASE WHEN product_name LIKE '%Quasure%' THEN 1 ELSE 0 END) AS quasure_skus,
+    ROUND(SUM(CASE WHEN product_name LIKE '%Quasure%' THEN 1.0 ELSE 0 END) * 100.0 / NULLIF(COUNT(item_id), 0), 1) AS quasure_sku_pct,
+    SUM(CASE WHEN product_name LIKE '%Quasure%' THEN revenue ELSE 0 END) AS quasure_revenue,
+    ROUND(SUM(CASE WHEN product_name LIKE '%Quasure%' THEN revenue ELSE 0 END) * 100.0 / NULLIF(SUM(revenue), 0), 1) AS quasure_revenue_pct,
+
+    -- 3. NHÓM SẢN PHẨM CÒN LẠI (NON-QUASURE)
+    SUM(CASE WHEN product_name NOT LIKE '%Quasure%' THEN 1 ELSE 0 END) AS non_quasure_skus,
+    ROUND(SUM(CASE WHEN product_name NOT LIKE '%Quasure%' THEN 1.0 ELSE 0 END) * 100.0 / NULLIF(COUNT(item_id), 0), 1) AS non_quasure_sku_pct,
+    SUM(CASE WHEN product_name NOT LIKE '%Quasure%' THEN revenue ELSE 0 END) AS non_quasure_revenue,
+    ROUND(SUM(CASE WHEN product_name NOT LIKE '%Quasure%' THEN revenue ELSE 0 END) * 100.0 / NULLIF(SUM(revenue), 0), 1) AS non_quasure_revenue_pct
+
+FROM Bibica_Latest;
+
+-- 1.2 So sánh mức chiết khấu trung bình: Bibica vs Toàn thị trường
 SELECT 
-    CASE 
-        WHEN TRY_CAST(discount_percent AS FLOAT) <= 5 THEN '1. Vùng 0-5%'
-        WHEN TRY_CAST(discount_percent AS FLOAT) > 5 AND TRY_CAST(discount_percent AS FLOAT) <= 15 THEN '2. Vùng 6-15%'
-        WHEN TRY_CAST(discount_percent AS FLOAT) > 15 AND TRY_CAST(discount_percent AS FLOAT) <= 25 THEN '3. Vùng 16-25%'
-        WHEN TRY_CAST(discount_percent AS FLOAT) > 25 AND TRY_CAST(discount_percent AS FLOAT) <= 35 THEN '4. Vùng 26-35%'
-        WHEN TRY_CAST(discount_percent AS FLOAT) > 35 AND TRY_CAST(discount_percent AS FLOAT) <= 45 THEN '5. Vùng 36-45%'
-        WHEN TRY_CAST(discount_percent AS FLOAT) > 45 THEN '6. Vùng > 45%'
-        ELSE 'Không xác định'
-    END AS [Vùng Chiết Khấu],
-    COUNT(item_id) AS [Số lượng SKU]
+    ROUND(AVG(CASE WHEN shop_name LIKE '%Bibica%' THEN TRY_CAST(discount_percent AS FLOAT) END), 1) AS bibica_avg_discount,
+    ROUND(AVG(CASE WHEN shop_name NOT LIKE '%Bibica%' THEN TRY_CAST(discount_percent AS FLOAT) END), 1) AS market_avg_discount
 FROM dbo.products
 WHERE country_code = 'vn'
-  AND (brand IS NULL OR brand NOT LIKE '%Bibica%') 
-  AND (product_name IS NULL OR product_name NOT LIKE '%Bibica%')
-GROUP BY 
-    CASE 
-        WHEN TRY_CAST(discount_percent AS FLOAT) <= 5 THEN '1. Vùng 0-5%'
-        WHEN TRY_CAST(discount_percent AS FLOAT) > 5 AND TRY_CAST(discount_percent AS FLOAT) <= 15 THEN '2. Vùng 6-15%'
-        WHEN TRY_CAST(discount_percent AS FLOAT) > 15 AND TRY_CAST(discount_percent AS FLOAT) <= 25 THEN '3. Vùng 16-25%'
-        WHEN TRY_CAST(discount_percent AS FLOAT) > 25 AND TRY_CAST(discount_percent AS FLOAT) <= 35 THEN '4. Vùng 26-35%'
-        WHEN TRY_CAST(discount_percent AS FLOAT) > 35 AND TRY_CAST(discount_percent AS FLOAT) <= 45 THEN '5. Vùng 36-45%'
-        WHEN TRY_CAST(discount_percent AS FLOAT) > 45 THEN '6. Vùng > 45%'
-        ELSE 'Không xác định'
-    END
-ORDER BY [Vùng Chiết Khấu] ASC;
--- ========================================================================
--- BẰNG CHỨNG 2: TOP 10 SẢN PHẨM BÁN CHẠY NHẤT VÀ MỨC CHIẾT KHẤU
--- (Trích xuất 10 sản phẩm Non-Bibica có sản lượng bán ra cao nhất)
--- ========================================================================
+  AND [date] = @LatestDate;
+
+-- 1.3 Bằng chứng chạy đua chiết khấu: Top 10 sản phẩm bán chạy nhất thị trường (Non-Bibica)
 SELECT TOP 10
     product_name AS [Tên Sản Phẩm],
     TRY_CAST(discount_percent AS FLOAT) AS [Mức Chiết Khấu (%)],
@@ -52,86 +62,19 @@ FROM dbo.products
 WHERE country_code = 'vn'
   AND (brand IS NULL OR brand NOT LIKE '%Bibica%') 
   AND (product_name IS NULL OR product_name NOT LIKE '%Bibica%')
+  AND [date] = @LatestDate
 ORDER BY TRY_CAST(monthly_sold_value AS FLOAT) DESC;
 
-
--- Q1 + Q2: Ty le SKU va doanh thu cua Quasure trong danh muc Bibica (Pareto donut)
-WITH Bibica_Latest AS (
-    SELECT *
-    FROM dbo.products
-    WHERE [date] = @LatestDate
-      AND country_code = 'vn'
-      AND shop_name LIKE '%Bibica%'
-)
-SELECT
-    COUNT(*)                                                            AS total_bibica_skus,
-    SUM(CASE WHEN product_name LIKE '%Quasure%' THEN 1 ELSE 0 END)      AS quasure_skus,
-    ROUND(SUM(CASE WHEN product_name LIKE '%Quasure%' THEN 1.0 ELSE 0 END)
-          * 100.0 / COUNT(*), 1)                                        AS quasure_sku_pct,          -- Expect: 21.9
-    ROUND(SUM(CASE WHEN product_name LIKE '%Quasure%'
-                    THEN price * TRY_CAST(monthly_sold_value AS FLOAT) ELSE 0 END)
-          * 100.0 / SUM(price * TRY_CAST(monthly_sold_value AS FLOAT)), 1)                 AS quasure_revenue_pct        -- Expect: 71.9
-FROM Bibica_Latest;
-
--- Q3: Chiet khau Quasure vs. doi thu truc tiep (Nestle Boost Glucose Control)
-SELECT
-    ROUND(AVG(CASE WHEN product_name LIKE '%Quasure%'      THEN TRY_CAST(discount_percent AS FLOAT) END), 1) AS quasure_avg_discount,        -- Expect: 20.0
-    ROUND(AVG(CASE WHEN product_name LIKE '%BOOST GLUCOSE%' THEN TRY_CAST(discount_percent AS FLOAT) END), 1) AS boost_glucose_avg_discount  -- Expect: 33.5
-FROM dbo.products
-WHERE [date] = @LatestDate
-  AND country_code = 'vn'
-  AND (product_name LIKE '%Quasure%' OR product_name LIKE '%BOOST GLUCOSE%');
-
-
--- ========================================================================
--- SLIDE 4: COMPETITIVE MONITORING SYSTEM
--- Q7 (SUPPORTING, v5): Top-5 SKU doi thu THAT SU cung phan khuc dinh duong
--- y te (Boost Glucose Control) voi Quasure, sap theo chiet khau hien tai
-SELECT TOP 5
-    p.shop_name       AS competitor_name,
-    p.product_name    AS competitor_sku,
-    p.price,
-    TRY_CAST(p.discount_percent AS FLOAT) AS current_discount
-FROM dbo.products p
-WHERE p.[date] = @LatestDate
-  AND p.country_code = 'vn'
-  AND p.shop_name NOT LIKE '%Bibica%'
-  AND p.product_name LIKE '%GLUCOSE%'
-ORDER BY TRY_CAST(p.discount_percent AS FLOAT) DESC;
--- Expect: 4 dong, toan bo la "Boost Glucose Control" (Nestlé Health Science),
--- discount 35.0 / 33.0 / 33.0 / 33.0
-
--- Q8 (SUPPORTING, v5): so SKU doi thu THAT SU cung phan khuc dinh duong y te
--- dang giam gia >30% - nuoi logic "Action Threshold" (chenh lech >10 diem %
--- thi kich hoat review gia)
-SELECT
-    N'Medical Nutrition Segment (Boost Glucose Control)' AS target_segment,
-    COUNT(DISTINCT p.item_id)                             AS competitor_skus_over_30pct,
-    ROUND(AVG(TRY_CAST(p.discount_percent AS FLOAT)), 1)  AS avg_aggressive_discount
-FROM dbo.products p
-WHERE p.[date] = @LatestDate
-  AND p.country_code = 'vn'
-  AND p.shop_name NOT LIKE '%Bibica%'
-  AND p.product_name LIKE '%GLUCOSE%'
-  AND TRY_CAST(p.discount_percent AS FLOAT) > 30;
--- Expect: competitor_skus_over_30pct = 4, avg_aggressive_discount = 33.5
--- (ca 4/4 SKU doi thu that trong phan khuc nay deu dang giam >30% - cang
--- cung co luan diem "doi thu buoc phai giam sau, Bibica thi khong")
-
-
--- ========================================================================
--- SLIDE 5: PRODUCT MATCHING MATRIX (Bubble Chart)
--- ========================================================================
-
+-- 1.4 Dữ liệu Ma trận định vị cạnh tranh (Product Matching Matrix / Bubble Chart)
 SELECT
     CASE WHEN product_name LIKE '%Quasure%'       THEN 'Quasure'
          WHEN product_name LIKE '%BOOST GLUCOSE%' THEN 'Boost Glucose Control'
          WHEN product_name LIKE '%BOOST OPTIMUM%' THEN 'Boost Optimum' END AS product_line,
-    COUNT(*)                              AS n_sku,               -- Expect: 21 / 4 / 7
-    ROUND(AVG(TRY_CAST(discount_percent AS FLOAT)), 1)       AS avg_discount_pct,    -- Expect: 20.0 / 33.5 / 32.1
-    SUM(TRY_CAST(monthly_sold_value AS FLOAT))               AS total_monthly_volume,-- Expect: 32,539 / 814 / 2,580
-    ROUND(SUM(price * TRY_CAST(monthly_sold_value AS FLOAT)), 0) AS total_monthly_revenue, -- Expect: 3,937,541,281 / 357,247,680 / 1,240,676,936
-    SUM(rating_count)                     AS total_reviews        -- Expect: 12,547 / 90 / 894
+    COUNT(*) AS n_sku,               
+    ROUND(AVG(TRY_CAST(discount_percent AS FLOAT)), 1) AS avg_discount_pct,    
+    SUM(TRY_CAST(monthly_sold_value AS FLOAT)) AS total_monthly_volume,
+    ROUND(SUM(price * TRY_CAST(monthly_sold_value AS FLOAT)), 0) AS total_monthly_revenue, 
+    SUM(rating_count) AS total_reviews
 FROM dbo.products
 WHERE [date] = @LatestDate
   AND country_code = 'vn'
@@ -141,19 +84,49 @@ GROUP BY CASE WHEN product_name LIKE '%Quasure%'       THEN 'Quasure'
               WHEN product_name LIKE '%BOOST OPTIMUM%' THEN 'Boost Optimum' END;
 
 
+/*
+===========================================================================
+PHẦN 2: PHÂN TÍCH ĐỘ NHẠY VỀ GIÁ & XÁC ĐỊNH NGƯỠNG CHIẾT KHẤU (SLIDE 9)
+===========================================================================
+*/
 
--- ========================================================================
--- SLIDE 6: DATA INSIGHTS (The Collapse of the Volume Trap)
--- ========================================================================
+-- 2.1 Phân phối sản lượng theo các phân khúc chiết khấu (Xác định mốc tối ưu 20%)
+SELECT 
+    CASE 
+        WHEN TRY_CAST(discount_percent AS FLOAT) BETWEEN 0 AND 5 THEN '1. 0% - 5%'
+        WHEN TRY_CAST(discount_percent AS FLOAT) > 5 AND TRY_CAST(discount_percent AS FLOAT) <= 10 THEN '2. 6% - 10%'
+        WHEN TRY_CAST(discount_percent AS FLOAT) > 10 AND TRY_CAST(discount_percent AS FLOAT) <= 15 THEN '3. 11% - 15%'
+        WHEN TRY_CAST(discount_percent AS FLOAT) > 15 AND TRY_CAST(discount_percent AS FLOAT) <= 20 THEN '4. 16% - 20%'
+        WHEN TRY_CAST(discount_percent AS FLOAT) > 20 AND TRY_CAST(discount_percent AS FLOAT) <= 25 THEN '5. 21% - 25%'
+        WHEN TRY_CAST(discount_percent AS FLOAT) > 25 AND TRY_CAST(discount_percent AS FLOAT) <= 30 THEN '6. 26% - 30%'
+        WHEN TRY_CAST(discount_percent AS FLOAT) > 30 THEN '7. > 30%'
+        ELSE 'Không xác định'
+    END AS discount_range,
+    COUNT(item_id) AS total_products, 
+    SUM(TRY_CAST(monthly_sold_value AS FLOAT)) AS total_sales_volume, 
+    ROUND(AVG(TRY_CAST(price AS FLOAT)), 0) AS average_price 
+FROM dbo.products 
+WHERE [date] = @LatestDate
+  AND (product_name LIKE '%Bibica%' OR product_name LIKE '%Quasure%')
+GROUP BY 
+    CASE 
+        WHEN TRY_CAST(discount_percent AS FLOAT) BETWEEN 0 AND 5 THEN '1. 0% - 5%'
+        WHEN TRY_CAST(discount_percent AS FLOAT) > 5 AND TRY_CAST(discount_percent AS FLOAT) <= 10 THEN '2. 6% - 10%'
+        WHEN TRY_CAST(discount_percent AS FLOAT) > 10 AND TRY_CAST(discount_percent AS FLOAT) <= 15 THEN '3. 11% - 15%'
+        WHEN TRY_CAST(discount_percent AS FLOAT) > 15 AND TRY_CAST(discount_percent AS FLOAT) <= 20 THEN '4. 16% - 20%'
+        WHEN TRY_CAST(discount_percent AS FLOAT) > 20 AND TRY_CAST(discount_percent AS FLOAT) <= 25 THEN '5. 21% - 25%'
+        WHEN TRY_CAST(discount_percent AS FLOAT) > 25 AND TRY_CAST(discount_percent AS FLOAT) <= 30 THEN '6. 26% - 30%'
+        WHEN TRY_CAST(discount_percent AS FLOAT) > 30 THEN '7. > 30%'
+        ELSE 'Không xác định'
+    END
+ORDER BY discount_range ASC;
 
--- Q4: Doanh thu TB nhom giam gia sau (>40%) vs giu gia ky luat (<=40%),
--- loai Nestle Health Science (outlier) VA loai ca Bibica (slide mo ta hanh
--- vi THI TRUONG can phan ung, khong phai chinh Bibica)
+-- 2.2 Đánh giá rủi ro từ chiến lược chiết khấu sâu của thị trường (Bẫy sản lượng >40%)
 SELECT
     CASE WHEN TRY_CAST(discount_percent AS FLOAT) > 40 THEN 'Deep Discount (>40%)'
-         ELSE 'Disciplined Pricing (<=40%)' END        AS discount_strategy,
-    COUNT(*)                                            AS total_skus,       -- Expect: 26 / 436
-    ROUND(AVG(price * TRY_CAST(monthly_sold_value AS FLOAT)), 0)           AS avg_monthly_revenue -- Expect: 89,658,938 / 648,334,417
+         ELSE 'Disciplined Pricing (<=40%)' END AS discount_strategy,
+    COUNT(*) AS total_skus,       
+    ROUND(AVG(price * TRY_CAST(monthly_sold_value AS FLOAT)), 0) AS avg_monthly_revenue
 FROM dbo.products
 WHERE [date] = @LatestDate
   AND country_code = 'vn'
@@ -164,18 +137,18 @@ GROUP BY CASE WHEN TRY_CAST(discount_percent AS FLOAT) > 40 THEN 'Deep Discount 
               ELSE 'Disciplined Pricing (<=40%)' END;
 
 
--- ========================================================================
--- SLIDE 8: STRATEGIC SOLUTIONS I & II (Static Pricing & Bundling)
--- ========================================================================
+/*
+===========================================================================
+PHẦN 3: GIẢI PHÁP CHIẾN LƯỢC - TỐI ƯU HÓA AOV (SLIDE 12)
+===========================================================================
+*/
 
--- Q5: Retail vs. Combo AOV va doanh thu TB/SKU, chi dong Quasure. Chi khop
--- tu khoa "Combo" (KHONG dung "Hop"/"Loc" vi de nham hop qua tang don le
--- thanh combo). Loai SKU qua tang khong ban.
+-- 3.1 Hiệu suất mô hình Gộp gói (Bundling) so với Bán lẻ (Retail)
 SELECT
     CASE WHEN product_name LIKE '%Combo%' THEN 'Bundle/Combo' ELSE 'Retail/Single' END AS product_type,
-    COUNT(*)                                    AS n_sku,           -- Expect: 16 / 5
-    ROUND(AVG(price), 0)                        AS aov,             -- Expect: 143,742 / 113,739
-    ROUND(AVG(price * TRY_CAST(monthly_sold_value AS FLOAT)), 0)   AS avg_revenue_per_sku -- Expect: 214,826,719 / 100,062,756
+    COUNT(*) AS n_sku,           
+    ROUND(AVG(price), 0) AS avg_order_value,
+    ROUND(AVG(price * TRY_CAST(monthly_sold_value AS FLOAT)), 0) AS avg_revenue_per_sku
 FROM dbo.products
 WHERE [date] = @LatestDate
   AND country_code = 'vn'
@@ -183,61 +156,15 @@ WHERE [date] = @LatestDate
   AND product_name NOT LIKE '%không bán%'
   AND product_name NOT LIKE '%khong ban%'
 GROUP BY CASE WHEN product_name LIKE '%Combo%' THEN 'Bundle/Combo' ELSE 'Retail/Single' END;
--- TRUY VẤN TÌM ĐIỂM ĐỨT GÃY SẢN LƯỢNG (TIPPING POINT ANALYSIS)
-SELECT 
-    CASE 
-        -- Ép cột discount_percent thành FLOAT trước khi so sánh
-        WHEN CAST(discount_percent AS FLOAT) BETWEEN 0 AND 5 THEN '1. 0% - 5%'
-        WHEN CAST(discount_percent AS FLOAT) > 5 AND CAST(discount_percent AS FLOAT) <= 10 THEN '2. 6% - 10%'
-        WHEN CAST(discount_percent AS FLOAT) > 10 AND CAST(discount_percent AS FLOAT) <= 15 THEN '3. 11% - 15%'
-        WHEN CAST(discount_percent AS FLOAT) > 15 AND CAST(discount_percent AS FLOAT) <= 20 THEN '4. 16% - 20%'
-        WHEN CAST(discount_percent AS FLOAT) > 20 AND CAST(discount_percent AS FLOAT) <= 25 THEN '5. 21% - 25%'
-        WHEN CAST(discount_percent AS FLOAT) > 25 AND CAST(discount_percent AS FLOAT) <= 30 THEN '6. 26% - 30%'
-        WHEN CAST(discount_percent AS FLOAT) > 30 THEN '7. > 30%'
-        ELSE 'Không xác định'
-    END AS discount_range,
-    
-    COUNT(item_id) AS total_products, 
-    -- Ép cột monthly_sold_value thành FLOAT để tính tổng
-    SUM(CAST(monthly_sold_value AS FLOAT)) AS total_sales_volume, 
-    -- Ép cột price thành FLOAT để tính trung bình
-    ROUND(AVG(CAST(price AS FLOAT)), 0) AS average_price 
-    
-FROM 
-    dbo.products 
-WHERE 
-    product_name LIKE '%Bibica%' OR product_name LIKE '%Quasure%' 
-GROUP BY 
-    CASE 
-        WHEN CAST(discount_percent AS FLOAT) BETWEEN 0 AND 5 THEN '1. 0% - 5%'
-        WHEN CAST(discount_percent AS FLOAT) > 5 AND CAST(discount_percent AS FLOAT) <= 10 THEN '2. 6% - 10%'
-        WHEN CAST(discount_percent AS FLOAT) > 10 AND CAST(discount_percent AS FLOAT) <= 15 THEN '3. 11% - 15%'
-        WHEN CAST(discount_percent AS FLOAT) > 15 AND CAST(discount_percent AS FLOAT) <= 20 THEN '4. 16% - 20%'
-        WHEN CAST(discount_percent AS FLOAT) > 20 AND CAST(discount_percent AS FLOAT) <= 25 THEN '5. 21% - 25%'
-        WHEN CAST(discount_percent AS FLOAT) > 25 AND CAST(discount_percent AS FLOAT) <= 30 THEN '6. 26% - 30%'
-        WHEN CAST(discount_percent AS FLOAT) > 30 THEN '7. > 30%'
-        ELSE 'Không xác định'
-    END
-ORDER BY 
-    discount_range ASC;
 
 
+/*
+===========================================================================
+PHẦN 4: DỮ LIỆU ĐỐI CHỨNG DÀNH CHO BÁO CÁO PHỤ LỤC (APPENDIX 1)
+===========================================================================
+*/
 
-
--- ========================================================================
--- SLIDE 4: BUSINESS CONTEXT (So sánh độ sâu chiết khấu)
--- ========================================================================
-SELECT 
-    ROUND(AVG(CASE WHEN shop_name LIKE '%Bibica%' THEN TRY_CAST(discount_percent AS FLOAT) END), 1) AS bibica_avg_discount,
-    ROUND(AVG(CASE WHEN shop_name NOT LIKE '%Bibica%' THEN TRY_CAST(discount_percent AS FLOAT) END), 1) AS market_avg_discount
-FROM dbo.products
-WHERE country_code = 'vn'
-  AND [date] = @LatestDate;
-
-
--- ========================================================================
--- SLIDE 17 (APPENDIX 1): Tác động của chiết khấu đến sản lượng bán Quasure
--- ========================================================================
+-- 4.1 Đánh giá độ co giãn của tệp khách hàng mục tiêu Quasure (Mốc tham chiếu 15%)
 SELECT 
     CASE WHEN TRY_CAST(discount_percent AS FLOAT) <= 15 THEN '<= 15%' 
          ELSE '> 15%' END AS discount_group,
@@ -250,5 +177,24 @@ WHERE country_code = 'vn'
 GROUP BY CASE WHEN TRY_CAST(discount_percent AS FLOAT) <= 15 THEN '<= 15%' 
               ELSE '> 15%' END;
 
-
-
+-- 4.2 Tần suất sử dụng chiết khấu sâu của các nhãn hàng đối thủ trên thị trường
+SELECT 
+    CASE 
+        WHEN TRY_CAST(discount_percent AS FLOAT) <= 15 THEN '1. Nhom Can Bang (<=15%)'
+        WHEN TRY_CAST(discount_percent AS FLOAT) > 15 AND TRY_CAST(discount_percent AS FLOAT) <= 45 THEN '2. Nhom Chiet Khau Sau (16% - 45%)'
+        WHEN TRY_CAST(discount_percent AS FLOAT) > 45 THEN '3. Nhom Ruy Ro Cao (>45%)'
+        ELSE '4. Khong Xac Dinh (Thieu Data)' 
+    END AS Market_Zone,
+    COUNT(item_id) AS total_skus
+FROM dbo.products
+WHERE country_code = 'vn'
+  AND (brand IS NULL OR brand NOT LIKE '%Bibica%') 
+  AND [date] = @LatestDate
+GROUP BY 
+    CASE 
+        WHEN TRY_CAST(discount_percent AS FLOAT) <= 15 THEN '1. Nhom Can Bang (<=15%)'
+        WHEN TRY_CAST(discount_percent AS FLOAT) > 15 AND TRY_CAST(discount_percent AS FLOAT) <= 45 THEN '2. Nhom Chiet Khau Sau (16% - 45%)'
+        WHEN TRY_CAST(discount_percent AS FLOAT) > 45 THEN '3. Nhom Ruy Ro Cao (>45%)'
+        ELSE '4. Khong Xac Dinh (Thieu Data)'
+    END
+ORDER BY Market_Zone ASC;
