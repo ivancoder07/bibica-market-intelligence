@@ -1,0 +1,1809 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quasure IQ - Strategic Pricing Radar</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .transition-smooth { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .animate-fadeIn { animation: fadeIn 0.25s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+    
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #1a2236; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #2a3654; }
+
+    .tech-card {
+      background: linear-gradient(180deg, rgba(17, 24, 39, 0.8) 0%, rgba(13, 19, 34, 0.95) 100%);
+      border: 1px solid rgba(30, 41, 59, 0.8);
+      backdrop-filter: blur(12px);
+    }
+    .tech-card:hover {
+      border-color: rgba(59, 130, 246, 0.4);
+      box-shadow: 0 0 25px rgba(37, 99, 235, 0.12);
+    }
+
+    .light-theme { background-color: #f8fafc !important; color: #0f172a !important; }
+    .light-theme aside { background-color: #ffffff !important; border-color: #e2e8f0 !important; }
+    .light-theme header { background-color: rgba(255, 255, 255, 0.9) !important; border-color: #e2e8f0 !important; }
+    .light-theme main { background-color: #f1f5f9 !important; }
+    .light-theme .tech-card, .light-theme .bg-\[\#0e1424\] { 
+      background: #ffffff !important; 
+      border-color: #e2e8f0 !important; 
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03) !important; 
+    }
+    .light-theme .bg-\[\#080c16\] { background-color: #f8fafc !important; border-color: #e2e8f0 !important; }
+    .light-theme .bg-\[\#121829\], .light-theme .bg-\[\#101626\] { background-color: #f1f5f9 !important; border-color: #cbd5e1 !important; }
+    .light-theme .text-white { color: #0f172a !important; }
+    .light-theme .text-slate-100 { color: #1e293b !important; }
+    .light-theme .text-slate-200 { color: #334155 !important; }
+    .light-theme .text-slate-300 { color: #475569 !important; }
+    .light-theme .border-\[\#1a233a\] { border-color: #e2e8f0 !important; }
+    .light-theme input { color: #0f172a !important; }
+  </style>
+</head>
+<body id="app-body" class="bg-[#080c16] text-slate-100 h-screen flex overflow-hidden selection:bg-blue-600 selection:text-white transition-smooth">
+
+  <!-- ================= SIDEBAR ================= -->
+  <aside class="w-64 bg-[#0d1322] border-r border-[#1a233a] flex flex-col justify-between shrink-0 select-none transition-smooth z-20">
+    <div>
+      <div class="px-6 py-5 border-b border-[#1a233a] flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center font-extrabold text-white shadow-[0_0_20px_rgba(37,99,235,0.4)]">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="font-bold text-sm text-white tracking-tight">Quasure IQ</h1>
+          <p class="text-[11px] text-slate-400 font-medium">Strategic Pricing Radar</p>
+        </div>
+      </div>
+
+      <nav class="p-3 space-y-1.5 text-[13px] font-semibold">
+        <button onclick="switchTab('radar')" id="tab-btn-radar" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-[#1a243d] text-blue-400 transition-smooth">
+          <span class="flex items-center gap-3">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-width="2"/><circle cx="12" cy="12" r="3" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v3m0 12v3m9-9h-3M6 12H3"/></svg>
+            Market Radar
+          </span>
+        </button>
+
+        <button onclick="switchTab('competitor')" id="tab-btn-competitor" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-[#131b2e] transition-smooth">
+          <span class="flex items-center gap-3">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+            Competitor Analysis
+          </span>
+        </button>
+
+        <button onclick="switchTab('combo')" id="tab-btn-combo" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-[#131b2e] transition-smooth">
+          <span class="flex items-center gap-3">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+            Combo Strategy
+          </span>
+        </button>
+
+        <button onclick="switchTab('logs')" id="tab-btn-logs" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-[#131b2e] transition-smooth">
+          <span class="flex items-center gap-3">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+            Alert Logs
+          </span>
+          <span id="sidebar-logs-badge" class="px-2 py-0.5 text-[11px] bg-amber-500 text-white rounded-full font-bold">2</span>
+        </button>
+
+        <button onclick="switchTab('settings')" id="tab-btn-settings" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-[#131b2e] transition-smooth">
+          <span class="flex items-center gap-3">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            Settings
+          </span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- Sidebar Footer -->
+    <div class="p-3 space-y-2.5 border-t border-[#1a233a]">
+      <div class="p-3 bg-[#080c16]/80 rounded-xl border border-[#1a233a]">
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] text-slate-400 font-medium">Trạng thái hệ thống</span>
+          <span id="sidebar-status-pill" class="text-[11px] font-bold text-amber-400 flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Đèn Vàng
+          </span>
+        </div>
+        <p id="sidebar-status-desc" class="text-[10px] text-slate-500 mt-1">2 cảnh báo hành động đang chờ xử lý.</p>
+      </div>
+
+      <div class="flex items-center gap-3 px-2 py-1.5">
+        <div class="w-8 h-8 rounded-full bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-xs font-bold text-blue-400">
+          TC
+        </div>
+        <div class="text-xs">
+          <p class="font-bold text-white leading-tight">Bibica Strategy</p>
+          <p class="text-[11px] text-slate-400">Executive Pricing Lead</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ================= MAIN CONTENT ================= -->
+  <main class="flex-1 flex flex-col h-screen overflow-y-auto bg-[#080c16] transition-smooth">
+    
+    <!-- TOP HEADER -->
+    <header class="h-16 border-b border-[#1a233a] bg-[#0d1322]/80 backdrop-blur-md px-8 flex items-center justify-between sticky top-0 z-30 shrink-0 transition-smooth">
+      <div class="relative flex items-center">
+        <input
+          type="text"
+          placeholder="Tìm SKU Quasure, đối thủ, tín hiệu Daily..."
+          class="w-80 bg-[#121829] border border-[#1f2a44] rounded-xl px-3.5 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 pl-9 pr-8 transition-smooth"
+        />
+        <svg class="w-3.5 h-3.5 text-slate-500 absolute left-3 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        <span class="absolute right-2.5 px-1.5 py-0.5 text-[9px] bg-[#1a233a] text-slate-400 rounded font-mono">⌘K</span>
+      </div>
+
+      <!-- Right Controls -->
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-1 bg-[#121829] p-1 rounded-xl border border-[#1f2a44]">
+          <span class="text-[11px] text-slate-400 px-2 font-medium">Pipeline Daily:</span>
+          <button onclick="setScenario('green')" id="btn-green" class="px-3 py-1 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-smooth">
+            🟢 dbo.product
+          </button>
+          <button onclick="setScenario('yellow')" id="btn-yellow" class="px-3 py-1 text-xs font-semibold rounded-lg bg-[#b45309]/30 text-amber-400 border border-amber-500/40 transition-smooth">
+            🟡 shock_inflation
+          </button>
+          <button onclick="setScenario('red')" id="btn-red" class="px-3 py-1 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-smooth">
+            🔴 shock_price_war
+          </button>
+        </div>
+
+        <div class="flex items-center gap-3 border-l border-[#1a233a] pl-4 relative">
+          <!-- Button Sáng / Tối -->
+          <button onclick="toggleTheme()" id="btn-theme-toggle" title="Chuyển đổi giao diện Sáng / Tối" class="text-slate-400 hover:text-amber-400 p-2 rounded-xl hover:bg-[#1a233a] transition-smooth">
+            <svg id="theme-icon-sun" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+            <svg id="theme-icon-moon" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+          </button>
+
+          <!-- Button Chuông Thông Báo -->
+          <div class="relative">
+            <button onclick="toggleNotifDropdown()" id="btn-notif" title="Báo cáo tóm tắt chỉ đạo chiến lược" class="text-slate-400 hover:text-white p-2 rounded-xl hover:bg-[#1a233a] relative transition-smooth">
+              <svg class="w-4 h-4 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+              <span id="notif-red-dot" class="w-2 h-2 rounded-full bg-rose-500 absolute top-1.5 right-1.5 shadow-[0_0_8px_#f43f5e]"></span>
+            </button>
+
+            <!-- DROPDOWN CHỈ ĐẠO CHO SẾP -->
+            <div id="notif-dropdown" class="hidden absolute right-0 mt-3 w-[450px] bg-[#101626] border border-[#222f4d] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.6)] p-5 z-50 text-slate-200 animate-fadeIn">
+              <div class="flex items-center justify-between pb-3.5 border-b border-[#1c2742]">
+                <div class="flex items-center gap-2.5">
+                  <div id="notif-header-dot" class="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-[0_0_8px_#fbbf24] animate-pulse"></div>
+                  <span class="font-extrabold text-[13px] text-white tracking-wide uppercase">Chỉ Đạo Tác Chiến Hàng Ngày</span>
+                </div>
+                <span class="text-[10px] text-slate-400 font-mono" id="notif-timestamp">Hôm nay, 01:15 AM (Đã đối soát)</span>
+              </div>
+
+              <div class="py-4 space-y-3.5" id="notif-content-boss"></div>
+
+              <div class="pt-3.5 border-t border-[#1c2742] flex items-center justify-between">
+                <span class="text-[11px] text-slate-400 font-medium">Bibica Executive Pipeline</span>
+                <button onclick="openModal()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-600/30 transition-smooth flex items-center gap-1.5">
+                  <span>⚡</span> Xem Lệnh Phản Công
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- User Profile -->
+          <div class="w-8 h-8 rounded-full bg-blue-600/20 border border-blue-500/50 flex items-center justify-center text-xs font-bold text-blue-400">TC</div>
+          <div class="text-left leading-tight hidden lg:block">
+            <p class="text-xs font-bold text-white">Trần Trung</p>
+            <p class="text-[10px] text-slate-400">Pricing Project Lead</p>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT BODY -->
+    <div class="max-w-7xl mx-auto w-full p-8 space-y-7 pb-24">
+
+      <!-- ================= TAB 1: MARKET RADAR ================= -->
+      <div id="view-radar" class="space-y-6">
+        <div class="flex justify-between items-center">
+          <div>
+            <div class="flex items-center gap-2.5">
+              <h2 class="text-[26px] font-extrabold text-white tracking-tight">Market Radar</h2>
+              <span id="title-status-pill" class="px-2.5 py-0.5 text-xs font-bold rounded-full bg-[#b45309]/20 text-amber-400 border border-amber-500/40 flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Đèn Vàng
+              </span>
+            </div>
+            <p class="text-xs text-slate-400 mt-1 font-medium">Cảm biến thị trường thời gian thực: Đối soát dữ liệu Daily quét lúc 01:00 AM so với Ranh giới định lượng đã chốt ở Tháng T-1.</p>
+          </div>
+          <button onclick="refreshDataAnimation()" class="px-4 py-2 text-xs font-bold bg-[#121829] border border-[#1f2a44] hover:bg-[#182035] text-slate-200 rounded-xl flex items-center gap-2 transition-smooth shadow-sm">
+            <svg id="refresh-icon" class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            Quét & Cập nhật Daily
+          </button>
+        </div>
+
+        <!-- ================= KHUNG ĐỐI CHIẾU: THÁNG T-1 (BENCHMARK) vs PHASE T (DAILY SENSING) ================= -->
+        <div class="tech-card p-4 rounded-2xl border border-blue-500/30 bg-gradient-to-r from-blue-950/30 via-[#0d1527] to-[#12192e] shadow-lg">
+          <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 pb-3 border-b border-[#1c2742]">
+            <div class="flex items-center gap-3">
+              <div class="w-7 h-7 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center text-sm font-bold shadow-[0_0_12px_rgba(59,130,246,0.3)]">
+                ⚖️
+              </div>
+              <div>
+                <h4 class="text-xs font-bold text-white tracking-wide uppercase">Cơ Sở Đối Chiếu Tham Chiếu (Dual-Timeframe Anchor)</h4>
+                <p class="text-[11px] text-slate-400">Ranh giới Tháng T-1 được khóa cố định để hệ thống tự động đánh giá từng nhịp sóng hàng ngày.</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 font-mono text-[11px]">
+              <span class="px-2.5 py-1 bg-[#101728] border border-[#22304f] text-slate-300 rounded-lg">
+                Chu kỳ: <strong class="text-blue-400">Tháng T-1</strong> (Lookback Benchmark)
+              </span>
+              <span class="text-slate-500">➔</span>
+              <span class="px-2.5 py-1 bg-blue-500/10 border border-blue-500/30 text-emerald-400 rounded-lg flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                Daily Run: <strong class="text-white">01:00 AM Hôm nay</strong>
+              </span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 pt-3 text-xs">
+            <div class="p-2.5 bg-[#080c16]/70 rounded-xl border border-[#1a233a]">
+              <div class="flex justify-between items-center text-[10px] text-slate-400">
+                <span>Trần Chiết Khấu Nội Bộ (T-1)</span>
+                <span class="text-blue-400 font-mono font-bold">L_internal</span>
+              </div>
+              <p class="text-base font-extrabold text-white mt-1">≤ 20.0%</p>
+              <p class="text-[10px] text-emerald-400 mt-0.5">Khóa từ Unit Economics (Bảo vệ Margin)</p>
+            </div>
+
+            <div class="p-2.5 bg-[#080c16]/70 rounded-xl border border-[#1a233a]">
+              <div class="flex justify-between items-center text-[10px] text-slate-400">
+                <span>Ngưỡng Gãy Hành Vi (T-1)</span>
+                <span class="text-rose-400 font-mono font-bold">T_behav</span>
+              </div>
+              <p class="text-base font-extrabold text-rose-400 mt-1" id="anchor-tipping">34.5%</p>
+              <p class="text-[10px] text-slate-400 mt-0.5">CART Tree từ 1.693 bản ghi quá khứ</p>
+            </div>
+
+            <div class="p-2.5 bg-[#080c16]/70 rounded-xl border border-[#1a233a]">
+              <div class="flex justify-between items-center text-[10px] text-slate-400">
+                <span>Tốc Độ Bán Daily (S_d)</span>
+                <span class="text-emerald-400 font-mono font-bold">Clean Velocity</span>
+              </div>
+              <p class="text-base font-extrabold text-emerald-400 mt-1" id="anchor-daily-velocity">3.420 hộp / ngày</p>
+              <p class="text-[10px] text-slate-400 mt-0.5">Khử 100% đơn ảo sàn & bug số đếm</p>
+            </div>
+
+            <div class="p-2.5 bg-[#080c16]/70 rounded-xl border border-[#1a233a]">
+              <div class="flex justify-between items-center text-[10px] text-slate-400">
+                <span>Bộ Lọc Duy Trì 24h</span>
+                <span class="text-amber-400 font-mono font-bold">Persistence</span>
+              </div>
+              <p class="text-base font-extrabold text-amber-400 mt-1" id="anchor-persistence-time">36h liên tục (>24h)</p>
+              <p class="text-[10px] text-slate-400 mt-0.5" id="anchor-persistence-desc">Đã lọc sạch Flash Sale rác 2–4h</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4 Metric Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div class="tech-card p-5 rounded-2xl relative shadow-sm">
+            <div class="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center absolute right-4 top-4">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+            </div>
+            <p class="text-xs font-medium text-slate-400">Quét Cảm Biến Daily (01:00 AM)</p>
+            <h3 class="text-3xl font-extrabold text-white mt-2 tracking-tight">21 SKU</h3>
+            <p class="text-xs text-emerald-400 mt-2 font-medium flex items-center gap-1">
+              <span>✓ Quét đúng 20–30 SKU y tế ngách</span>
+            </p>
+          </div>
+
+          <div class="tech-card p-5 rounded-2xl relative shadow-sm">
+            <div class="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center absolute right-4 top-4">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <p class="text-xs font-medium text-slate-400">AOV Daily vs Baseline T-1</p>
+            <h3 id="card-aov-val" class="text-3xl font-extrabold text-white mt-2 tracking-tight">143.7k đ</h3>
+            <p id="card-aov-sub" class="text-xs text-emerald-400 mt-2 font-medium flex items-center gap-1">
+              <span>↗ +26.4% so với mốc 113.7k đ</span>
+            </p>
+          </div>
+
+          <div class="tech-card p-5 rounded-2xl relative shadow-sm">
+            <div class="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center absolute right-4 top-4">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/></svg>
+            </div>
+            <p class="text-xs font-medium text-slate-400">Chiết Khấu Đối Thủ Daily (D_comp)</p>
+            <h3 id="card-discount-val" class="text-3xl font-extrabold text-white mt-2 tracking-tight">10.1%</h3>
+            <p id="card-discount-sub" class="text-xs text-amber-400 mt-2 font-medium flex items-center gap-1">
+              <span>↘ Co hẹp khuyến mãi do lạm phát</span>
+            </p>
+          </div>
+
+          <div class="tech-card p-5 rounded-2xl relative flex flex-col justify-between shadow-sm">
+            <div class="w-8 h-8 rounded-xl bg-rose-500/10 text-rose-400 flex items-center justify-center absolute right-4 top-4">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            </div>
+            <div>
+              <p class="text-xs font-medium text-slate-400">Ma Trận 3 Đèn (Thời Gian Thực)</p>
+              <h4 id="card-alert-title" class="text-xl font-bold text-white mt-1.5 flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span> Đèn Vàng
+              </h4>
+              <p id="card-alert-sub" class="text-xs text-slate-400 mt-1 cursor-pointer hover:text-white" onclick="openModal()">Nhấn để xem chỉ đạo phản công phi giá →</p>
+            </div>
+            <div id="btn-action-wrapper" class="mt-4">
+              <button onclick="openModal()" class="w-full py-2.5 px-3 bg-[#ff4d4f] hover:bg-[#ff3838] text-white text-xs font-bold rounded-xl shadow-[0_0_20px_rgba(255,77,79,0.3)] transition-smooth flex items-center justify-center gap-2">
+                <span>⚡</span> Phát Lệnh Tác Chiến
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Scatter Plot -->
+        <div class="tech-card p-6 rounded-2xl shadow-sm">
+          <div class="flex justify-between items-center mb-6">
+            <div>
+              <h4 class="font-bold text-white text-base tracking-tight">Vị thế cạnh tranh Daily: Quasure vs Nestlé Boost</h4>
+              <p class="text-xs text-slate-400 mt-0.5">Trục X: Giá (nghìn đ) · Trục Y: Sản lượng bán (nghìn sp) · Kích thước: Lượt đánh giá thực tế</p>
+            </div>
+            <div class="flex items-center gap-5 text-xs">
+              <span class="flex items-center gap-2 text-slate-300 font-medium">
+                <span class="w-2.5 h-2.5 rounded-full bg-[#4f8df7] inline-block shadow-[0_0_10px_#4f8df7]"></span> Quasure
+              </span>
+              <span class="flex items-center gap-2 text-slate-300 font-medium">
+                <span class="w-2.5 h-2.5 rounded-full bg-[#f97316] inline-block shadow-[0_0_10px_#f97316]"></span> Nestlé Boost
+              </span>
+            </div>
+          </div>
+
+          <div class="relative h-72 w-full bg-[#080c16]/90 rounded-2xl border border-[#1a233a] p-6 flex flex-col justify-between overflow-hidden">
+            <div class="absolute inset-0 grid grid-cols-4 grid-rows-4 pointer-events-none opacity-20">
+              <div class="border-r border-b border-dashed border-slate-500"></div>
+              <div class="border-r border-b border-dashed border-slate-500"></div>
+              <div class="border-r border-b border-dashed border-slate-500"></div>
+              <div class="border-b border-dashed border-slate-500"></div>
+              <div class="border-r border-b border-dashed border-slate-500"></div>
+              <div class="border-r border-b border-dashed border-slate-500"></div>
+              <div class="border-r border-b border-dashed border-slate-500"></div>
+              <div class="border-b border-dashed border-slate-500"></div>
+              <div class="border-r border-b border-dashed border-slate-500"></div>
+              <div class="border-r border-b border-dashed border-slate-500"></div>
+              <div class="border-r border-b border-dashed border-slate-500"></div>
+              <div class="border-b border-dashed border-slate-500"></div>
+            </div>
+
+            <div class="absolute left-4 top-4 bottom-8 flex flex-col justify-between text-[11px] text-slate-500 font-mono select-none">
+              <span>82k</span>
+              <span>73k</span>
+              <span>58k</span>
+              <span>43k</span>
+              <span>28k</span>
+            </div>
+
+            <div id="scatter-bubbles-container" class="relative flex-1 ml-10 mr-4 mb-2"></div>
+
+            <div class="flex justify-between text-[11px] text-slate-500 border-t border-[#1a233a] pt-2.5 ml-10 font-mono select-none">
+              <span>240k</span>
+              <span>390k</span>
+              <span>540k</span>
+              <span>690k</span>
+              <span>760k</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bar Chart -->
+        <div class="tech-card p-6 rounded-2xl shadow-sm">
+          <div class="flex justify-between items-center mb-6">
+            <div>
+              <h4 class="font-bold text-white text-base tracking-tight">Phân phối sản lượng theo mức chiết khấu</h4>
+              <p class="text-xs text-slate-400 mt-0.5">Sản lượng (nghìn sp) tại các mốc chiết khấu 15% · 20% · 30% · &gt;30%</p>
+            </div>
+            <div class="flex items-center gap-5 text-xs">
+              <span class="flex items-center gap-2 text-slate-300 font-medium">
+                <span class="w-2.5 h-2.5 rounded-full bg-[#4f8df7] inline-block shadow-[0_0_10px_#4f8df7]"></span> Quasure
+              </span>
+              <span class="flex items-center gap-2 text-slate-300 font-medium">
+                <span class="w-2.5 h-2.5 rounded-full bg-[#f97316] inline-block shadow-[0_0_10px_#f97316]"></span> Nestlé Boost
+              </span>
+            </div>
+          </div>
+
+          <div class="relative h-64 w-full bg-[#080c16]/90 rounded-2xl border border-[#1a233a] p-6 flex flex-col justify-between">
+            <div class="absolute left-4 top-4 bottom-8 flex flex-col justify-between text-[11px] text-slate-500 font-mono select-none">
+              <span>800</span>
+              <span>600</span>
+              <span>400</span>
+              <span>200</span>
+              <span>0</span>
+            </div>
+
+            <div id="bar-chart-container" class="relative flex-1 ml-10 flex items-end justify-around"></div>
+
+            <div class="flex justify-around text-xs text-slate-400 border-t border-[#1a233a] pt-2.5 ml-10 font-medium select-none">
+              <span>0–15%</span>
+              <span>15%</span>
+              <span>20%</span>
+              <span>30%</span>
+              <span>&gt;30%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top 10 Table -->
+        <div class="tech-card p-6 rounded-2xl shadow-sm">
+          <div class="flex justify-between items-center mb-4">
+            <div>
+              <h4 class="font-bold text-white text-base tracking-tight">Top 10 sản phẩm bán chạy nhất thị trường</h4>
+              <p class="text-xs text-slate-400 mt-0.5">Dữ liệu bóc tách Clean Velocity sau khi loại trừ phantom orders</p>
+            </div>
+            <div class="flex items-center gap-2 text-xs text-slate-400 bg-[#121829] px-3 py-1.5 rounded-xl border border-[#1f2a44]">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>Đã kiểm tra qua bộ lọc 24h</span>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="text-slate-400 uppercase bg-[#080c16]/60 border-b border-[#1a233a]">
+                <tr>
+                  <th class="px-4 py-3.5 w-12 text-center">#</th>
+                  <th class="px-4 py-3.5">SẢN PHẨM</th>
+                  <th class="px-4 py-3.5">THƯƠNG HIỆU</th>
+                  <th class="px-4 py-3.5">GIÁ</th>
+                  <th class="px-4 py-3.5">CHIẾT KHẤU</th>
+                  <th class="px-4 py-3.5">SẢN LƯỢNG</th>
+                  <th class="px-4 py-3.5 text-right">XU HƯỚNG</th>
+                </tr>
+              </thead>
+              <tbody id="top10-table-body" class="divide-y divide-[#1a233a]/60 text-slate-200"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= TAB 2: COMPETITOR ANALYSIS ================= -->
+      <div id="view-competitor" class="hidden space-y-7 animate-fadeIn">
+        <div class="flex justify-between items-center">
+          <div>
+            <div class="flex items-center gap-3">
+              <h2 class="text-[26px] font-extrabold text-white tracking-tight">Competitor Analysis</h2>
+              <span class="px-2.5 py-0.5 text-xs font-bold rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/30 font-mono">
+                AI NLP TF-IDF & Cosine Similarity
+              </span>
+            </div>
+            <p class="text-xs text-slate-400 mt-1 font-medium" id="comp-subtext">Hệ thống tự động quét trích xuất đặc trưng văn bản và phân loại đối thủ vào ngách dinh dưỡng y tế.</p>
+          </div>
+          <span class="px-3.5 py-1.5 text-xs font-bold bg-[#121829] border border-[#1f2a44] text-slate-300 rounded-xl flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            NLP Engine Active (Zero-Capex)
+          </span>
+        </div>
+
+        <!-- 4 KPI Chips -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div class="tech-card p-4 rounded-2xl">
+            <span class="text-[11px] font-semibold text-slate-400">Độ Tương Đồng NLP</span>
+            <h4 class="text-2xl font-extrabold text-orange-400 mt-1">94.2%</h4>
+            <p class="text-[10px] text-slate-500 mt-1">Tách riêng Nestlé Boost khỏi bánh kẹo</p>
+          </div>
+
+          <div class="tech-card p-4 rounded-2xl">
+            <span class="text-[11px] font-semibold text-slate-400">Tỷ Lệ Giá / Khẩu Phần</span>
+            <h4 class="text-2xl font-extrabold text-blue-400 mt-1" id="comp-kpi-ratio">1 / 8x</h4>
+            <p class="text-[10px] text-slate-500 mt-1">Quasure sở hữu lợi thế giá vượt trội</p>
+          </div>
+
+          <div class="tech-card p-4 rounded-2xl">
+            <span class="text-[11px] font-semibold text-slate-400">Cách Biệt Đánh Giá (Reviews)</span>
+            <h4 class="text-2xl font-extrabold text-emerald-400 mt-1">12.7x</h4>
+            <p class="text-[10px] text-slate-500 mt-1">12.547 vs 984 đánh giá của đối thủ</p>
+          </div>
+
+          <div class="tech-card p-4 rounded-2xl">
+            <span class="text-[11px] font-semibold text-slate-400">Ngưỡng Gãy Hành Vi (T_behav)</span>
+            <h4 class="text-2xl font-extrabold text-rose-400 mt-1" id="comp-kpi-tipping">34.5%</h4>
+            <p class="text-[10px] text-slate-500 mt-1">Điểm đứt gãy sụp đổ uy tín đối thủ</p>
+          </div>
+        </div>
+
+        <!-- 3 Thẻ Phân Loại Đối Thủ -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div class="tech-card p-5 rounded-2xl border-l-4 border-l-blue-500 relative flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between pb-3 border-b border-[#1c2742]">
+                <span class="px-2.5 py-1 text-[11px] font-extrabold bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-lg">
+                  DIRECT MASTER
+                </span>
+                <span class="text-xs font-bold text-white">Thương hiệu chủ lực</span>
+              </div>
+              <h3 class="text-xl font-extrabold text-white mt-3">Bibica Quasure</h3>
+              <div class="mt-3.5 space-y-2 text-xs">
+                <div class="flex justify-between py-1 border-b border-[#18233a]">
+                  <span class="text-slate-400">Phân khúc:</span>
+                  <span class="font-semibold text-slate-200">Dinh dưỡng Y tế / Tiểu đường</span>
+                </div>
+                <div class="flex justify-between py-1 border-b border-[#18233a]">
+                  <span class="text-slate-400">Đặc tính khách hàng:</span>
+                  <span class="font-semibold text-emerald-400">Không co giãn theo giá (Inelastic)</span>
+                </div>
+                <div class="flex justify-between py-1 border-b border-[#18233a]">
+                  <span class="text-slate-400">Chiến lược định giá:</span>
+                  <span class="font-semibold text-blue-400">Giá tĩnh trần ≤ 20% (Unit Economics)</span>
+                </div>
+              </div>
+            </div>
+            <div class="mt-4 pt-3 border-t border-[#1c2742] flex items-center justify-between text-xs">
+              <span class="text-slate-400">Quy mô: <strong class="text-white">21 SKU</strong></span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                Gross Margin an toàn
+              </span>
+            </div>
+          </div>
+
+          <div class="tech-card p-5 rounded-2xl border-l-4 border-l-orange-500 relative flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between pb-3 border-b border-[#1c2742]">
+                <span class="px-2.5 py-1 text-[11px] font-extrabold bg-orange-500/20 text-orange-400 border border-orange-500/30 rounded-lg flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse"></span> DIRECT RIVAL
+                </span>
+                <span class="text-xs font-bold text-orange-300 font-mono">94.2% NLP Match</span>
+              </div>
+              <h3 class="text-xl font-extrabold text-white mt-3">Nestlé Boost / Nutren</h3>
+              <div class="mt-3.5 space-y-2 text-xs">
+                <div class="flex justify-between py-1 border-b border-[#18233a]">
+                  <span class="text-slate-400">Phân khúc:</span>
+                  <span class="font-semibold text-slate-200">Sữa bột y học người lớn tuổi</span>
+                </div>
+                <div class="flex justify-between py-1 border-b border-[#18233a]">
+                  <span class="text-slate-400">Định vị giá:</span>
+                  <span class="font-semibold text-orange-400">Nhập khẩu cao cấp (Giá x8)</span>
+                </div>
+                <div class="flex justify-between py-1 border-b border-[#18233a]">
+                  <span class="text-slate-400">Điểm yếu cốt tử:</span>
+                  <span class="font-semibold text-rose-400" id="comp-card-boost-gai">Dễ gãy niềm tin ở 34.5%</span>
+                </div>
+              </div>
+            </div>
+            <div class="mt-4 pt-3 border-t border-[#1c2742] flex items-center justify-between text-xs">
+              <span class="text-slate-400">Chiết khấu TB: <strong class="text-amber-400" id="comp-card-boost-disc">10.1% - 34.9%</strong></span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                Đối thủ trực diện
+              </span>
+            </div>
+          </div>
+
+          <div class="tech-card p-5 rounded-2xl border-l-4 border-l-slate-600 relative flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between pb-3 border-b border-[#1c2742]">
+                <span class="px-2.5 py-1 text-[11px] font-extrabold bg-slate-800 text-slate-300 border border-slate-700 rounded-lg">
+                  INDIRECT RIVAL
+                </span>
+                <span class="text-xs text-slate-400 font-mono">28.5% NLP Match</span>
+              </div>
+              <h3 class="text-xl font-extrabold text-white mt-3">Bánh kẹo Đại trà (Orion, Cosy)</h3>
+              <div class="mt-3.5 space-y-2 text-xs">
+                <div class="flex justify-between py-1 border-b border-[#18233a]">
+                  <span class="text-slate-400">Phân khúc:</span>
+                  <span class="font-semibold text-slate-200">Bánh kẹo phổ thông nhiều đường</span>
+                </div>
+                <div class="flex justify-between py-1 border-b border-[#18233a]">
+                  <span class="text-slate-400">Vũ khí cạnh tranh:</span>
+                  <span class="font-semibold text-slate-300">Flash Sale 2-4h & Cắt máu giá</span>
+                </div>
+                <div class="flex justify-between py-1 border-b border-[#18233a]">
+                  <span class="text-slate-400">Rào cản y tế:</span>
+                  <span class="font-semibold text-slate-400">Không có chứng nhận dinh dưỡng</span>
+                </div>
+              </div>
+            </div>
+            <div class="mt-4 pt-3 border-t border-[#1c2742] flex items-center justify-between text-xs">
+              <span class="text-slate-400">Chiết khấu TB: <strong class="text-slate-300" id="comp-card-rival-disc">35.0%+</strong></span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400 border border-slate-700">
+                Không cùng phân khúc
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Radar & Portfolio Bubbles -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="tech-card p-6 rounded-2xl shadow-sm flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h4 class="font-bold text-white text-base tracking-tight">Radar So Sánh 5 Trục Năng Lực Cốt Lõi</h4>
+                <p class="text-xs text-slate-400 mt-0.5">Biểu diễn "lãnh thổ áp đảo bất đối xứng" của Quasure trước Nestlé Boost</p>
+              </div>
+              <div class="flex items-center gap-3 text-xs">
+                <span class="flex items-center gap-1.5 text-blue-400 font-bold">
+                  <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> Quasure
+                </span>
+                <span class="flex items-center gap-1.5 text-orange-400 font-bold">
+                  <span class="w-2.5 h-2.5 rounded-full bg-orange-500"></span> Nestlé
+                </span>
+              </div>
+            </div>
+            <div class="relative h-64 w-full flex items-center justify-center">
+              <svg viewBox="0 0 300 300" class="w-full h-full overflow-visible">
+                <polygon points="150,50 245.1,119.1 208.8,230.9 91.2,230.9 54.9,119.1" fill="none" stroke="#1f2a44" stroke-width="1.5" stroke-dasharray="3,3" />
+                <polygon points="150,75 221.3,126.8 194.1,210.7 105.9,210.7 78.7,126.8" fill="none" stroke="#1f2a44" stroke-width="1.5" stroke-dasharray="3,3" />
+                <polygon points="150,100 197.6,134.5 179.4,190.5 120.6,190.5 102.4,134.5" fill="none" stroke="#1f2a44" stroke-width="1.5" stroke-dasharray="3,3" />
+                <polygon points="150,125 173.8,142.3 164.7,170.2 135.3,170.2 126.2,142.3" fill="none" stroke="#1f2a44" stroke-width="1.5" />
+                <line x1="150" y1="150" x2="150.0" y2="50.0" stroke="#223254" stroke-width="1.5" />
+                <line x1="150" y1="150" x2="245.1" y2="119.1" stroke="#223254" stroke-width="1.5" />
+                <line x1="150" y1="150" x2="208.8" y2="230.9" stroke="#223254" stroke-width="1.5" />
+                <line x1="150" y1="150" x2="91.2" y2="230.9" stroke="#223254" stroke-width="1.5" />
+                <line x1="150" y1="150" x2="54.9" y2="119.1" stroke="#223254" stroke-width="1.5" />
+                <polygon id="radar-nestle-polygon" points="150.0,130.0 164.3,145.4 194.1,210.7 129.4,178.3 131.0,143.8" fill="rgba(249, 115, 22, 0.25)" stroke="#f97316" stroke-width="2" class="transition-smooth" />
+                <polygon points="150.0,55.0 240.4,120.6 205.8,226.9 100.0,218.8 64.4,122.2" fill="rgba(59, 130, 246, 0.35)" stroke="#3b82f6" stroke-width="2.5" />
+                <text x="150" y="32" text-anchor="middle" fill="#94a3b8" font-size="10" font-weight="700">Sản lượng Bán (9.6x)</text>
+                <text x="255" y="115" text-anchor="start" fill="#94a3b8" font-size="10" font-weight="700">Social Proof (12.7x)</text>
+                <text x="220" y="248" text-anchor="start" fill="#94a3b8" font-size="10" font-weight="700">Rào cản Y tế (Viện DD)</text>
+                <text x="80" y="248" text-anchor="end" fill="#94a3b8" font-size="10" font-weight="700">Độ phủ SKU (21 SKU)</text>
+                <text x="45" y="115" text-anchor="end" fill="#94a3b8" font-size="10" font-weight="700">Giá Tiếp Cận (1/8x)</text>
+              </svg>
+            </div>
+            <p class="text-[11px] text-slate-400 text-center mt-2 border-t border-[#1a233a] pt-2.5">
+              Lãnh thổ Quasure (màu xanh) bao trùm tuyệt đối ở 4/5 góc năng lực cốt lõi.
+            </p>
+          </div>
+
+          <div class="tech-card p-6 rounded-2xl shadow-sm flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h4 class="font-bold text-white text-base tracking-tight">Ma Trận Hiệu Suất Portfolio SKU Đối Thủ</h4>
+                <p class="text-xs text-slate-400 mt-0.5">Trục X: Giá bán (nghìn đ) · Trục Y: Doanh thu ước tính · Kích thước: Sản lượng</p>
+              </div>
+              <span class="px-2.5 py-0.5 text-[10px] font-bold bg-orange-500/10 text-orange-400 border border-orange-500/30 rounded-full">
+                Nestlé SKU Matrix
+              </span>
+            </div>
+            <div class="relative h-64 w-full bg-[#080c16]/90 rounded-2xl border border-[#1a233a] p-4 flex flex-col justify-between overflow-hidden">
+              <div class="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none opacity-20">
+                <div class="border-r border-b border-dashed border-slate-500"></div>
+                <div class="border-r border-b border-dashed border-slate-500"></div>
+                <div class="border-b border-dashed border-slate-500"></div>
+                <div class="border-r border-b border-dashed border-slate-500"></div>
+                <div class="border-r border-b border-dashed border-slate-500"></div>
+                <div class="border-b border-dashed border-slate-500"></div>
+              </div>
+              <span class="absolute top-2 right-3 text-[9px] font-bold text-blue-400/70 bg-blue-950/40 px-2 py-0.5 rounded border border-blue-500/20">REVENUE DRIVERS</span>
+              <span class="absolute top-2 left-10 text-[9px] font-bold text-emerald-400/70 bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-500/20">VOLUME LEADERS</span>
+              <span class="absolute bottom-9 right-3 text-[9px] font-bold text-rose-400/70 bg-rose-950/40 px-2 py-0.5 rounded border border-rose-500/20">CLEAROUT / VỰC THẲM</span>
+              <div class="absolute left-2 top-4 bottom-8 flex flex-col justify-between text-[10px] text-slate-500 font-mono select-none">
+                <span>12.5B</span>
+                <span>4.0B</span>
+                <span>1.0B</span>
+                <span>0</span>
+              </div>
+              <div id="comp-portfolio-bubbles" class="relative flex-1 ml-10 mr-2 mb-2"></div>
+              <div class="flex justify-between text-[10px] text-slate-500 border-t border-[#1a233a] pt-1.5 ml-10 font-mono select-none">
+                <span>50k (Rẻ)</span>
+                <span>800k</span>
+                <span>1.600k</span>
+                <span>2.800k (Đắt)</span>
+              </div>
+            </div>
+            <p class="text-[11px] text-slate-400 text-center mt-2 border-t border-[#1a233a] pt-2.5">
+              Phân loại rõ SKU nào mang lại doanh thu chính và SKU nào đang bị xả kho quá 34.5%.
+            </p>
+          </div>
+        </div>
+
+        <!-- BẢNG TOP 5 SẢN PHẨM ĐỐI THỦ -->
+        <div class="tech-card p-6 rounded-2xl shadow-sm">
+          <div class="flex justify-between items-center mb-4">
+            <div>
+              <h4 class="font-bold text-white text-base tracking-tight">Top 5 Sản Phẩm Dẫn Đầu Của Đối Thủ (Nestlé Boost / Nutren Portfolio)</h4>
+              <p class="text-xs text-slate-400 mt-0.5">Trích xuất trực tiếp từ dữ liệu cào Shopee theo kịch bản tương ứng</p>
+            </div>
+            <span class="px-3 py-1 text-xs font-bold bg-orange-500/10 text-orange-400 border border-orange-500/30 rounded-xl">
+              Giám sát đối thủ trực tiếp
+            </span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="text-slate-400 uppercase bg-[#080c16]/60 border-b border-[#1a233a]">
+                <tr>
+                  <th class="px-4 py-3.5 w-12 text-center">#</th>
+                  <th class="px-4 py-3.5">SKU ĐỐI THỦ</th>
+                  <th class="px-4 py-3.5">GIÁ BÁN</th>
+                  <th class="px-4 py-3.5">CHIẾT KHẤU</th>
+                  <th class="px-4 py-3.5">SẢN LƯỢNG / THÁNG</th>
+                  <th class="px-4 py-3.5">DOANH THU ƯỚC TÍNH</th>
+                  <th class="px-4 py-3.5 text-right">ĐÁNH GIÁ ĐIỂM YẾU CHIẾN THUẬT</th>
+                </tr>
+              </thead>
+              <tbody id="competitor-top5-body" class="divide-y divide-[#1a233a]/60 text-slate-200"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= TAB 3: COMBO STRATEGY ================= -->
+      <div id="view-combo" class="hidden space-y-7 animate-fadeIn">
+        <div class="flex justify-between items-center">
+          <div>
+            <div class="flex items-center gap-3">
+              <h2 class="text-[26px] font-extrabold text-white tracking-tight">Combo Strategy (Tối Ưu AOV)</h2>
+              <span class="px-2.5 py-0.5 text-xs font-bold rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/30 font-mono">
+                Static Pricing ≤ 20% & Bundling Matrix
+              </span>
+            </div>
+            <p class="text-xs text-slate-400 mt-1 font-medium" id="combo-subtext">Chiến lược giá tĩnh trần 20% kết hợp gộp gói Bundling để nhân đôi dòng tiền thuần mà không cần giảm giá đơn chiếc.</p>
+          </div>
+          <span class="px-3.5 py-1.5 text-xs font-bold bg-[#121829] border border-[#1f2a44] text-slate-300 rounded-xl flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            AOV Engine Active
+          </span>
+        </div>
+
+        <!-- 4 KPI Chips Combo -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div class="tech-card p-4 rounded-2xl">
+            <span class="text-[11px] font-semibold text-slate-400">Tăng Trưởng AOV Trung Bình</span>
+            <h4 class="text-2xl font-extrabold text-emerald-400 mt-1" id="combo-kpi-growth">+26.4%</h4>
+            <p class="text-[10px] text-slate-500 mt-1">Từ 113.739 đ lên 143.742 đ</p>
+          </div>
+
+          <div class="tech-card p-4 rounded-2xl">
+            <span class="text-[11px] font-semibold text-slate-400">Chỉ Số Dòng Tiền Thuần (P&L)</span>
+            <h4 class="text-2xl font-extrabold text-blue-400 mt-1" id="combo-kpi-netcash">Net Cash = 139</h4>
+            <p class="text-[10px] text-slate-500 mt-1">+39% so với mốc cơ sở 100</p>
+          </div>
+
+          <div class="tech-card p-4 rounded-2xl">
+            <span class="text-[11px] font-semibold text-slate-400">Quy Mô Doanh Thu Mẫu</span>
+            <h4 class="text-2xl font-extrabold text-white mt-1" id="combo-kpi-revenue">214.8M</h4>
+            <p class="text-[10px] text-slate-500 mt-1">Tăng gấp x2.14 lần bán lẻ đơn chiếc</p>
+          </div>
+
+          <div class="tech-card p-4 rounded-2xl">
+            <span class="text-[11px] font-semibold text-slate-400">Kỷ Luật Khóa Trần Chiết Khấu</span>
+            <h4 class="text-2xl font-extrabold text-indigo-400 mt-1">≤ 20.0%</h4>
+            <p class="text-[10px] text-slate-500 mt-1">Bảo toàn 100% Gross Margin</p>
+          </div>
+        </div>
+
+        <!-- 2 Thẻ So Sánh Group A vs Group B -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div class="tech-card p-6 rounded-2xl border-l-4 border-l-slate-600 relative flex flex-col justify-between shadow-sm">
+            <div>
+              <div class="flex items-center justify-between pb-3.5 border-b border-[#1c2742]">
+                <span class="px-2.5 py-1 text-[11px] font-extrabold bg-slate-800 text-slate-300 border border-slate-700 rounded-lg">
+                  BASELINE (THÁNG T-1)
+                </span>
+                <span class="text-xs font-bold text-slate-400">Bán Lẻ Đơn Chiếc</span>
+              </div>
+              <div class="mt-4">
+                <span class="text-xs font-semibold text-slate-400">AOV Cơ Sở Tham Chiếu</span>
+                <h3 class="text-3xl font-extrabold text-slate-200 mt-1" id="combo-aov-single">113.739 VNĐ</h3>
+              </div>
+              <div class="mt-4 space-y-2 text-xs">
+                <div class="flex justify-between py-1.5 border-b border-[#18233a]">
+                  <span class="text-slate-400">Cơ cấu giỏ hàng:</span>
+                  <span class="font-semibold text-slate-300">Mua lẻ từng hộp đơn (1 - 2 hộp)</span>
+                </div>
+                <div class="flex justify-between py-1.5 border-b border-[#18233a]">
+                  <span class="text-slate-400">Quy mô doanh thu mẫu:</span>
+                  <span class="font-semibold text-slate-300" id="combo-rev-single">100 Triệu VNĐ</span>
+                </div>
+                <div class="flex justify-between py-1.5 border-b border-[#18233a]">
+                  <span class="text-slate-400">Đánh giá hiệu suất:</span>
+                  <span class="font-semibold text-slate-400">Bỏ lỡ tiềm năng chi trả của người nhà</span>
+                </div>
+              </div>
+            </div>
+            <div class="mt-5 pt-3.5 border-t border-[#1c2742] flex items-center justify-between text-xs">
+              <span class="text-slate-400">Lợi nhuận gộp chuẩn:</span>
+              <span class="px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-slate-800 text-slate-300 border border-slate-700" id="combo-netcash-single">
+                Net Cash = 100
+              </span>
+            </div>
+          </div>
+
+          <div class="tech-card p-6 rounded-2xl border-l-4 border-l-blue-500 relative flex flex-col justify-between shadow-sm bg-blue-950/10">
+            <div>
+              <div class="flex items-center justify-between pb-3.5 border-b border-[#1c2742]">
+                <span class="px-2.5 py-1 text-[11px] font-extrabold bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-lg flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></span> DAILY OPTIMIZATION (PHASE T)
+                </span>
+                <span class="px-2 py-0.5 text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full" id="combo-aov-growth">
+                  +26.4% AOV
+                </span>
+              </div>
+              <div class="mt-4">
+                <span class="text-xs font-semibold text-blue-300">AOV Khi Kích Hoạt Gói Combo 3</span>
+                <h3 class="text-3xl font-extrabold text-blue-400 mt-1" id="combo-aov-combo">143.742 VNĐ</h3>
+              </div>
+              <div class="mt-4 space-y-2 text-xs">
+                <div class="flex justify-between py-1.5 border-b border-[#18233a]">
+                  <span class="text-slate-400">Cơ cấu giỏ hàng:</span>
+                  <span class="font-semibold text-blue-200">Bundle 3 hộp / Liệu trình 3 tuần điều trị</span>
+                </div>
+                <div class="flex justify-between py-1.5 border-b border-[#18233a]">
+                  <span class="text-slate-400">Quy mô doanh thu mẫu:</span>
+                  <span class="font-semibold text-emerald-400" id="combo-rev-combo">214.8 Triệu VNĐ (Tăng x2.14)</span>
+                </div>
+                <div class="flex justify-between py-1.5 border-b border-[#18233a]">
+                  <span class="text-slate-400">Hiệu ứng kinh tế:</span>
+                  <span class="font-semibold text-emerald-400">Tối ưu hóa lượng tiền mặt thực thu</span>
+                </div>
+              </div>
+            </div>
+            <div class="mt-5 pt-3.5 border-t border-[#1c2742] flex items-center justify-between text-xs">
+              <span class="text-slate-300 font-medium">Dòng tiền thực thu post-execution:</span>
+              <span class="px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-sm" id="combo-netcash-combo">
+                Net Cash = 139 (+39%)
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Banner Budget Shift -->
+        <div class="tech-card p-4 rounded-2xl border-blue-500/30 flex items-start gap-3.5">
+          <div class="w-8 h-8 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-base shrink-0 mt-0.5 shadow-[0_0_15px_rgba(59,130,246,0.3)]">💡</div>
+          <div class="text-xs leading-relaxed text-slate-300">
+            <strong class="text-white">Kỷ luật vận hành ngân sách (SOP & Tapering):</strong> Toàn bộ chiến dịch kích hoạt duy trì tối thiểu 72 giờ. Khi đối thủ hạ nhiệt chiết khấu, hệ thống giảm dần 50% ngân sách/ngày (Daily Tapering) để thu hồi vốn lưu động an toàn.
+          </div>
+        </div>
+
+        <!-- BIỂU ĐỒ DOANH THU 6 THÁNG -->
+        <div class="tech-card p-6 rounded-2xl shadow-sm">
+          <div class="flex justify-between items-center mb-6">
+            <div>
+              <h4 class="font-bold text-white text-base tracking-tight">Mô Phỏng Doanh Thu Lũy Tiến 6 Tháng: Áp Dụng Combo vs Không Áp Dụng</h4>
+              <p class="text-xs text-slate-400 mt-0.5">Đơn vị tính: Triệu VNĐ · Tăng trưởng AOV thúc đẩy doanh thu vượt bậc mà không bào mòn biên lợi nhuận gộp</p>
+            </div>
+            <div class="flex items-center gap-5 text-xs">
+              <span class="flex items-center gap-2 text-slate-300 font-medium">
+                <span class="w-2.5 h-2.5 rounded-full bg-slate-500 inline-block"></span> Không áp dụng (Bán lẻ đơn)
+              </span>
+              <span class="flex items-center gap-2 text-slate-300 font-medium">
+                <span class="w-2.5 h-2.5 rounded-full bg-[#4f8df7] inline-block shadow-[0_0_10px_#4f8df7]"></span> Có áp dụng Combo (+26.4% AOV)
+              </span>
+            </div>
+          </div>
+
+          <div class="relative h-64 w-full bg-[#080c16]/90 rounded-2xl border border-[#1a233a] p-6 flex flex-col justify-between">
+            <div class="absolute left-4 top-4 bottom-8 flex flex-col justify-between text-[11px] text-slate-500 font-mono select-none">
+              <span>250M</span>
+              <span>180M</span>
+              <span>120M</span>
+              <span>60M</span>
+              <span>0M</span>
+            </div>
+
+            <div class="relative flex-1 ml-12 flex items-end justify-around">
+              <div class="flex items-end gap-2 h-full group">
+                <div class="w-7 sm:w-8 bg-slate-700/80 rounded-t-lg transition-smooth" style="height: 40%;"></div>
+                <div class="w-7 sm:w-8 bg-[#4f8df7] rounded-t-lg transition-smooth shadow-[0_0_10px_rgba(79,141,247,0.3)]" style="height: 48%;"></div>
+              </div>
+              <div class="flex items-end gap-2 h-full group">
+                <div class="w-7 sm:w-8 bg-slate-700/80 rounded-t-lg transition-smooth" style="height: 41%;"></div>
+                <div class="w-7 sm:w-8 bg-[#4f8df7] rounded-t-lg transition-smooth shadow-[0_0_10px_rgba(79,141,247,0.3)]" style="height: 56%;"></div>
+              </div>
+              <div class="flex items-end gap-2 h-full group">
+                <div class="w-7 sm:w-8 bg-slate-700/80 rounded-t-lg transition-smooth" style="height: 42%;"></div>
+                <div class="w-7 sm:w-8 bg-[#4f8df7] rounded-t-lg transition-smooth shadow-[0_0_10px_rgba(79,141,247,0.3)]" style="height: 68%;"></div>
+              </div>
+              <div class="flex items-end gap-2 h-full group">
+                <div class="w-7 sm:w-8 bg-slate-700/80 rounded-t-lg transition-smooth" style="height: 40%;"></div>
+                <div class="w-7 sm:w-8 bg-[#4f8df7] rounded-t-lg transition-smooth shadow-[0_0_10px_rgba(79,141,247,0.3)]" style="height: 76%;"></div>
+              </div>
+              <div class="flex items-end gap-2 h-full group">
+                <div class="w-7 sm:w-8 bg-slate-700/80 rounded-t-lg transition-smooth" style="height: 43%;"></div>
+                <div class="w-7 sm:w-8 bg-[#4f8df7] rounded-t-lg transition-smooth shadow-[0_0_10px_rgba(79,141,247,0.3)]" style="height: 85%;"></div>
+              </div>
+              <div class="flex items-end gap-2 h-full group">
+                <div class="w-7 sm:w-8 bg-slate-700/80 rounded-t-lg transition-smooth" style="height: 42%;"></div>
+                <div class="w-7 sm:w-8 bg-[#4f8df7] rounded-t-lg transition-smooth shadow-[0_0_10px_rgba(79,141,247,0.3)]" style="height: 94%;"></div>
+              </div>
+            </div>
+
+            <div class="flex justify-around text-xs text-slate-400 border-t border-[#1a233a] pt-2.5 ml-12 font-medium select-none">
+              <span>Tháng 1</span>
+              <span>Tháng 2</span>
+              <span>Tháng 3</span>
+              <span>Tháng 4</span>
+              <span>Tháng 5</span>
+              <span>Tháng 6</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- BẢNG ĐỀ XUẤT 4 GÓI COMBO -->
+        <div class="tech-card p-6 rounded-2xl shadow-sm">
+          <div class="flex justify-between items-center mb-4">
+            <div>
+              <h4 class="font-bold text-white text-base tracking-tight">Danh Mục Gói Combo Chiến Lược (Bundle Recommendations Matrix)</h4>
+              <p class="text-xs text-slate-400 mt-0.5">Tự động ưu tiên hiển thị khi đối thủ kích hoạt Đèn Vàng</p>
+            </div>
+            <span class="px-3 py-1 text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-xl">
+              Khóa trần chiết khấu ≤ 20%
+            </span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="text-slate-400 uppercase bg-[#080c16]/60 border-b border-[#1a233a]">
+                <tr>
+                  <th class="px-4 py-3.5">GÓI COMBO ĐỀ XUẤT</th>
+                  <th class="px-4 py-3.5">PHÂN LOẠI MỤC TIÊU</th>
+                  <th class="px-4 py-3.5">GIÁ BÁN GÓI</th>
+                  <th class="px-4 py-3.5">CHIẾT KHẤU</th>
+                  <th class="px-4 py-3.5">AOV DỰ PHÓNG</th>
+                  <th class="px-4 py-3.5">GMV ƯỚC TÍNH</th>
+                  <th class="px-4 py-3.5 text-right">TĂNG TRƯỞNG DÒNG TIỀN</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-[#1a233a]/60 text-slate-200">
+                <tr class="hover:bg-[#12192c]/60 transition-smooth">
+                  <td class="px-4 py-3.5 font-semibold text-white flex items-center">
+                    Combo 3 Hộp Bánh Bông Lan Quasure Light (3 x 180g)
+                    <span class="ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30">TOP 1 GMV</span>
+                  </td>
+                  <td class="px-4 py-3.5 text-slate-400">Bundle Tiêu Dùng Tuần</td>
+                  <td class="px-4 py-3.5 font-bold text-white font-mono">415.000 đ</td>
+                  <td class="px-4 py-3.5 text-emerald-400 font-bold">7.3%</td>
+                  <td class="px-4 py-3.5 text-blue-400 font-bold">138.333 đ <span class="text-emerald-400 font-normal">(+21.6%)</span></td>
+                  <td class="px-4 py-3.5 font-semibold text-slate-200">85.4 Triệu VNĐ</td>
+                  <td class="px-4 py-3.5 text-right font-bold text-emerald-400 font-mono">+34.5% Net Cash</td>
+                </tr>
+                <tr class="hover:bg-[#12192c]/60 transition-smooth">
+                  <td class="px-4 py-3.5 font-semibold text-white flex items-center">
+                    Giỏ Quà Biếu Sức Khỏe Quasure Family (Bông Lan + Bánh Quy + Ngũ Cốc)
+                    <span class="ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">QUÀ BIẾU</span>
+                  </td>
+                  <td class="px-4 py-3.5 text-slate-400">Bundle Quà Biếu Sức Khỏe</td>
+                  <td class="px-4 py-3.5 font-bold text-white font-mono">580.000 đ</td>
+                  <td class="px-4 py-3.5 text-emerald-400 font-bold">8.5%</td>
+                  <td class="px-4 py-3.5 text-blue-400 font-bold">193.333 đ <span class="text-emerald-400 font-normal">(+70.0%)</span></td>
+                  <td class="px-4 py-3.5 font-semibold text-slate-200">72.0 Triệu VNĐ</td>
+                  <td class="px-4 py-3.5 text-right font-bold text-emerald-400 font-mono">+48.2% Net Cash</td>
+                </tr>
+                <tr class="hover:bg-[#12192c]/60 transition-smooth">
+                  <td class="px-4 py-3.5 font-semibold text-white flex items-center">
+                    Combo 2 Hộp Bánh Quy Sữa + 1 Túi Ngũ Cốc Ăn Kiêng
+                    <span class="ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">BỮA SÁNG</span>
+                  </td>
+                  <td class="px-4 py-3.5 text-slate-400">Bundle Dinh Dưỡng Sáng</td>
+                  <td class="px-4 py-3.5 font-bold text-white font-mono">265.000 đ</td>
+                  <td class="px-4 py-3.5 text-emerald-400 font-bold">6.8%</td>
+                  <td class="px-4 py-3.5 text-blue-400 font-bold">132.500 đ <span class="text-emerald-400 font-normal">(+16.5%)</span></td>
+                  <td class="px-4 py-3.5 font-semibold text-slate-200">38.2 Triệu VNĐ</td>
+                  <td class="px-4 py-3.5 text-right font-bold text-emerald-400 font-mono">+28.0% Net Cash</td>
+                </tr>
+                <tr class="hover:bg-[#12192c]/60 transition-smooth">
+                  <td class="px-4 py-3.5 font-semibold text-white flex items-center">
+                    Bộ Dinh Dưỡng Toàn Diện Quasure Gold (Dành Cho Bệnh Nhân Tiểu Đường)
+                    <span class="ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30">ĐIỀU TRỊ</span>
+                  </td>
+                  <td class="px-4 py-3.5 text-slate-400">Bundle Liệu Trình Tháng</td>
+                  <td class="px-4 py-3.5 font-bold text-white font-mono">720.000 đ</td>
+                  <td class="px-4 py-3.5 text-emerald-400 font-bold">6.5%</td>
+                  <td class="px-4 py-3.5 text-blue-400 font-bold">240.000 đ <span class="text-emerald-400 font-normal">(+111.0%)</span></td>
+                  <td class="px-4 py-3.5 font-semibold text-slate-200">45.6 Triệu VNĐ</td>
+                  <td class="px-4 py-3.5 text-right font-bold text-emerald-400 font-mono">+52.4% Net Cash</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= TAB 4: ALERT LOGS ================= -->
+      <div id="view-logs" class="hidden space-y-6 animate-fadeIn">
+        <div class="flex justify-between items-center">
+          <div>
+            <h2 class="text-[26px] font-extrabold text-white tracking-tight">Alert Logs (Nhật Ký Tác Chiến Daily)</h2>
+            <p class="text-xs text-slate-400 mt-1 font-medium">Lịch sử phát hiện bất thường từ bot 01:00 AM và lệnh dispatch tự động.</p>
+          </div>
+          <span id="logs-active-badge" class="px-3 py-1 text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-xl">2 cảnh báo hoạt động</span>
+        </div>
+        <div class="space-y-3 text-xs" id="logs-container"></div>
+      </div>
+
+      <!-- ================= TAB 5: SETTINGS ================= -->
+      <div id="view-settings" class="hidden space-y-6 animate-fadeIn">
+        <div>
+          <h2 class="text-[26px] font-extrabold text-white tracking-tight">Settings & Infinity Loop Calibration</h2>
+          <p class="text-xs text-slate-400 mt-1 font-medium">Thiết lập ranh giới định lượng tháng và cổng kết nối tự động.</p>
+        </div>
+
+        <div class="tech-card p-6 rounded-2xl max-w-2xl space-y-5 text-xs">
+          <div>
+            <label class="block text-slate-300 font-bold mb-1.5">Trần Chiết Khấu Nội Bộ (L_internal %)</label>
+            <input type="number" value="20" class="w-full bg-[#080c16] border border-[#1a233a] rounded-xl px-3.5 py-2 text-white focus:outline-none focus:border-blue-500" />
+            <p class="text-[11px] text-slate-500 mt-1">Khóa cứng bởi phòng Tài chính dựa trên Unit Economics để bảo vệ Gross Margin.</p>
+          </div>
+
+          <div>
+            <label class="block text-slate-300 font-bold mb-1.5">Ngưỡng Gãy Tâm Lý Thị Trường (T_behav %)</label>
+            <input id="settings-tipping-point" type="number" value="34.5" step="0.1" class="w-full bg-[#080c16] border border-[#1a233a] rounded-xl px-3.5 py-2 text-white focus:outline-none focus:border-blue-500" />
+            <p class="text-[11px] text-slate-500 mt-1">CART Decision Tree tự động trích xuất từ dữ liệu lookback 30 ngày của chu kỳ T-1.</p>
+          </div>
+
+          <div>
+            <label class="block text-slate-300 font-bold mb-1.5">Bộ Lọc Duy Trì Flash Sale (Persistence Window)</label>
+            <input type="text" value="24 - 48 giờ" readonly class="w-full bg-[#080c16] border border-[#1a233a] rounded-xl px-3.5 py-2 text-slate-400 focus:outline-none cursor-not-allowed" />
+            <p class="text-[11px] text-slate-500 mt-1">Tự động bỏ qua các biến động chớp nhoáng 2-4h để không lãng phí ngân sách phòng thủ.</p>
+          </div>
+
+          <div class="pt-3 border-t border-[#1a233a] flex justify-end">
+            <button onclick="alert('Đã cập nhật cấu hình tham số thành công!')" class="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition">
+              Lưu & Kiểm toán Chu Kỳ T+1
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ================= POP-UP MODAL CẢNH BÁO ================= -->
+  <div id="action-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-[#181a20] border border-[#2a344d] rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl text-slate-200 animate-fadeIn">
+      <div class="p-6 pb-4 flex items-start justify-between">
+        <div class="flex items-center gap-3.5">
+          <div id="modal-icon-box" class="w-12 h-12 rounded-2xl border border-amber-500/20 bg-amber-500/10 text-amber-500 flex items-center justify-center text-xl font-bold">
+            <svg class="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+          </div>
+          <div>
+            <p id="modal-level" class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">CẢNH BÁO HÀNH ĐỘNG · CẤP ĐỘ VÀNG</p>
+            <h3 id="modal-title" class="text-xl font-bold text-white tracking-tight">CẢNH BÁO ĐÈN VÀNG</h3>
+          </div>
+        </div>
+        <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-slate-800/60 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center text-sm transition-smooth">
+          ✕
+        </button>
+      </div>
+
+      <div class="px-6 py-2 space-y-5">
+        <p id="modal-desc" class="text-sm text-slate-300 leading-relaxed"></p>
+        <div class="space-y-3">
+          <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">CHỈ ĐẠO TÁC CHIẾN TỰ ĐỘNG</p>
+          <div id="modal-actions-container" class="space-y-2.5"></div>
+        </div>
+      </div>
+
+      <div class="p-6 pt-5 flex items-center justify-end gap-3 mt-2">
+        <button onclick="closeModal()" class="px-5 py-2.5 text-xs text-slate-400 hover:text-white font-medium transition-smooth">
+          Để sau
+        </button>
+        <button id="modal-submit-btn" onclick="executeCampaign()" class="px-5 py-2.5 text-xs font-bold rounded-xl shadow-lg transition-smooth flex items-center gap-1.5 bg-[#3b82f6] hover:bg-blue-600 text-white">
+          ⚡ Chấp nhận đẩy gói Combo 3
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 bg-emerald-600 text-white px-5 py-3 rounded-2xl shadow-2xl hidden items-center gap-3 animate-fadeIn">
+    <span>✅</span>
+    <span class="text-xs font-bold">Lệnh tác chiến phi giá đã được phân bổ tự động thành công!</span>
+  </div>
+
+  <!-- ================= JAVASCRIPT LOGIC ================= -->
+  <script>
+    const scenarioData = {
+      // 🟢 KỊCH BẢN XANH: DBO.PRODUCT (SAFE ZONE)
+      green: {
+        pill: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40',
+        dot: 'bg-emerald-400',
+        title: 'Đèn Xanh',
+        cardTitle: '<span class="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block"></span> Đèn Xanh',
+        discount: '15.4%',
+        discountSub: '↗ Dao động tự nhiên (≤ 20% L_internal)',
+        tippingPoint: 34.5,
+        kpiRatio: '1 / 5.3x',
+        kpiTipping: '34.5%',
+
+        dailyVelocity: '3.180 hộp / ngày',
+        persistenceTime: '8h (Chưa qua ngưỡng)',
+        persistenceDesc: 'Nhiễu tự nhiên < 24h, giữ trạng thái chờ',
+        aovVal: '113.7k đ',
+        aovSub: 'Giữ mốc Baseline chuẩn T-1',
+
+        bossBriefHtml: `
+          <div class="p-3.5 bg-emerald-500/10 border border-emerald-500/30 rounded-xl flex items-center justify-between">
+            <span class="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
+              <span>🟢</span> VÙNG AN TOÀN (SAFE ZONE)
+            </span>
+            <span class="text-[11px] text-emerald-300 font-semibold">Tín hiệu: Dao động bình thường</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2.5">
+            <div class="p-2.5 bg-[#080c16] rounded-xl border border-[#1c2742]">
+              <span class="text-[10px] text-slate-400">CK Đối thủ Daily (01:00 AM)</span>
+              <p class="text-sm font-bold text-white mt-0.5">15.4% (Dưới trần 20%)</p>
+            </div>
+            <div class="p-2.5 bg-[#080c16] rounded-xl border border-[#1c2742]">
+              <span class="text-[10px] text-slate-400">Trần Giá Quasure</span>
+              <p class="text-sm font-bold text-blue-400 mt-0.5">≤ 20.0% (Giữ tĩnh)</p>
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <div class="flex items-start gap-2.5 p-2.5 bg-[#161f36]/70 rounded-xl border border-[#222f4d]">
+              <div class="w-6 h-6 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-xs shrink-0">🛡️</div>
+              <div class="text-[11px]">
+                <strong class="text-slate-100">Kỷ luật giá tĩnh:</strong> Đối thủ chưa vượt trần 20% và chưa đủ 24h duy trì. Hệ thống giữ nguyên giá niêm yết chuẩn để bảo toàn 100% Gross Margin.
+              </div>
+            </div>
+          </div>
+
+          <div class="p-2.5 bg-[#080c16] rounded-xl border border-[#1c2742] flex justify-between items-center text-[11px]">
+            <span class="text-slate-400">Dự phóng Dòng tiền:</span>
+            <span class="font-bold text-emerald-400 font-mono">Net Cash = 100 (Bảo toàn)</span>
+          </div>
+        `,
+
+        modal: {
+          level: 'CẢNH BÁO HÀNH ĐỘNG · CẤP ĐỘ XANH',
+          title: 'THỊ TRƯỜNG AN TOÀN',
+          iconBox: 'border-emerald-500/20 bg-emerald-500/10 text-emerald-500',
+          desc: 'Đối thủ Nestlé duy trì chiết khấu <strong class="text-emerald-400 font-semibold">15.4%</strong> — hoàn toàn nằm dưới lằn ranh đỏ nội bộ 20% và chưa vượt qua ngưỡng 24h.',
+          actions: [
+            { icon: '🛡️', iconBg: 'bg-emerald-500/20 text-emerald-400', text: 'Giữ nguyên giá niêm yết Quasure; tuyệt đối không giảm giá đơn chiếc' }
+          ],
+          btnText: '⚡ Đã ghi nhận vào P&L Daily',
+          btnClass: 'bg-emerald-600 hover:bg-emerald-500 text-white'
+        },
+        scatter: [
+          { x: 260, y: 68, size: 28, brand: 'nestle', name: 'Nestlé Boost' },
+          { x: 300, y: 40, size: 22, brand: 'quasure', name: 'Quasure Basic' },
+          { x: 390, y: 62, size: 30, brand: 'quasure', name: 'Quasure Gold' },
+          { x: 530, y: 48, size: 24, brand: 'quasure', name: 'Quasure Lite' },
+          { x: 620, y: 76, size: 40, brand: 'quasure', name: 'Quasure Combo 3' },
+          { x: 740, y: 54, size: 32, brand: 'quasure', name: 'Quasure Family' }
+        ],
+        bars: {
+          quasure: [260, 420, 580, 210, 50],
+          nestle: [140, 220, 310, 450, 180]
+        },
+        table: [
+          { rank: 1, name: 'Quasure Combo 3 (Daily Run)', isCombo: true, brand: 'Quasure', price: '610k', discount: '20%', isRed: false, sold: '74.200', trend: '+12.4%', isUp: true },
+          { rank: 2, name: 'Quasure Gold 400g', isCombo: false, brand: 'Quasure', price: '385k', discount: '15%', isRed: false, sold: '65.100', trend: '+5.2%', isUp: true },
+          { rank: 3, name: 'Bộ 3 Sữa Bột Nestlé Nutren Junior', isCombo: false, brand: 'Nestlé', price: '1.651k', discount: '20%', isRed: false, sold: '5.000', trend: '+2.1%', isUp: true },
+          { rank: 4, name: 'Quasure Combo Family', isCombo: true, brand: 'Quasure', price: '720k', discount: '18%', isRed: false, sold: '58.300', trend: '+14.1%', isUp: true }
+        ],
+        compSub: 'Dữ liệu chuẩn dbo.product: Đối thủ duy trì chiết khấu bình ổn trong ngách dinh dưỡng y tế.',
+        boostDisc: '15.4% (An toàn)',
+        boostGai: 'Khóa ở mốc 34.5%',
+        rivalDisc: '18.0%+',
+        qVol: '101.468 hộp / tháng',
+        bVol: '71.101 hộp / tháng',
+        advVol: 'Gấp 1.4 lần (Thống trị sản lượng)',
+        qPrice: '52.000 – 408.000 VNĐ',
+        bPrice: '65.000 – 1.849.000 VNĐ',
+        advPrice: 'Chỉ bằng 1/5 chi phí đối thủ',
+        
+        comboSub: 'Thị trường ổn định: Duy trì chuẩn AOV Baseline 113.7k VNĐ và bảo toàn dòng tiền.',
+        aovSingle: '113.739 VNĐ',
+        aovCombo: '113.739 VNĐ',
+        aovGrowth: 'Baseline chuẩn',
+        kpiRevenue: '100.0M',
+        revSingle: '100 Triệu VNĐ',
+        revCombo: '100 Triệu VNĐ',
+        netSingle: 'Net Cash = 100',
+        netCombo: 'Net Cash = 100 (Bảo toàn)',
+        
+        logCountBadge: '1 thông báo hệ thống',
+        sidebarLogCount: '0',
+        logs: [
+          { tag: 'DAILY SENSING 01:00 AM', badge: 'COMPLETED', badgeColor: 'bg-emerald-500/20 text-emerald-300', icon: '📡', iconBg: 'bg-emerald-500/10 text-emerald-400', title: 'Hoàn tất cào dữ liệu Daily trên 21 SKU dinh dưỡng y tế.', sub: 'D_comp = 15.4% (<= L_internal 20%). Bộ lọc xác nhận không có biến động bất thường.', time: 'Hôm nay 01:00:15', border: 'border-[#1a233a]' }
+        ],
+        compTop5: [
+          { rank: 1, name: 'Bộ 3 Sữa Bột NESTLÉ NUTREN JUNIOR 800g', price: '1.651.480 đ', discount: '18.0%', isHigh: false, sold: '5.000', rev: '8.26 Tỷ VNĐ', threat: 'SKU chủ lực đối thủ duy trì giá chuẩn', isDanger: false },
+          { rank: 2, name: 'Bộ 2 Thùng 36 Hộp Sữa Pha Sẵn NESTLÉ NUTREN JUNIOR', price: '1.087.320 đ', discount: '19.5%', isHigh: false, sold: '2.000', rev: '2.17 Tỷ VNĐ', threat: 'Khuyến mãi nhẹ kênh tuần', isDanger: false },
+          { rank: 3, name: 'Sữa Bột NESTLÉ NUTREN JUNIOR Thụy Sĩ 800g (Hộp đơn)', price: '550.290 đ', discount: '15.0%', isHigh: false, sold: '3.000', rev: '1.65 Tỷ VNĐ', threat: 'Cạnh tranh trực tiếp Quasure Gold', isDanger: false },
+          { rank: 4, name: 'Thùng 24 Hộp Sữa Pha Sẵn NESTLÉ NUTREN JUNIOR', price: '581.000 đ', discount: '16.0%', isHigh: false, sold: '2.000', rev: '1.16 Tỷ VNĐ', threat: 'Sản lượng ổn định kênh tiêu dùng', isDanger: false },
+          { rank: 5, name: 'Thùng 36 Hộp Sữa Pha Sẵn NESTLÉ NUTREN JUNIOR', price: '546.140 đ', discount: '18.5%', isHigh: false, sold: '2.000', rev: '1.09 Tỷ VNĐ', threat: 'Cạnh tranh gói gia đình', isDanger: false }
+        ],
+        radarNestlePts: "150.0,130.0 164.3,145.4 194.1,210.7 129.4,178.3 131.0,143.8",
+        portfolioBubbles: [
+          { name: 'Nutren 800g (3 hộp)', price: 1651, rev: 8.26, size: 36, left: 60, top: 12, color: 'bg-orange-500 border-orange-300' },
+          { name: 'Nutren Thùng 36 (Bộ 2)', price: 1087, rev: 2.17, size: 28, left: 40, top: 45, color: 'bg-emerald-500 border-emerald-300' },
+          { name: 'Nutren Hộp Đơn', price: 550, rev: 1.65, size: 30, left: 20, top: 55, color: 'bg-amber-500 border-amber-300' },
+          { name: 'Nutren Thùng 24', price: 581, rev: 1.16, size: 24, left: 22, top: 62, color: 'bg-blue-500 border-blue-300' },
+          { name: 'Nutren Thùng 36', price: 546, rev: 1.09, size: 24, left: 20, top: 65, color: 'bg-orange-500 border-orange-300' }
+        ]
+      },
+
+      // 🟡 KỊCH BẢN VÀNG: SHOCK_INFLATION (MARGIN PRESSURE & COMBO TRIGGER)
+      yellow: {
+        pill: 'bg-[#b45309]/20 text-amber-400 border-amber-500/40',
+        dot: 'bg-amber-400',
+        title: 'Đèn Vàng',
+        cardTitle: '<span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span> Đèn Vàng',
+        discount: '26.8%',
+        discountSub: '↗ Ép giá kéo dài > 24h (20% - 34.5%)',
+        tippingPoint: 34.5,
+        kpiRatio: '1 / 7.6x',
+        kpiTipping: '34.5%',
+
+        dailyVelocity: '3.420 hộp / ngày',
+        persistenceTime: '36h liên tục (>24h)',
+        persistenceDesc: 'Vượt qua bộ lọc 24h, mở khóa phản công',
+        aovVal: '143.7k đ',
+        aovSub: '↗ +26.4% nhờ kích hoạt Combo 3',
+
+        bossBriefHtml: `
+          <div class="p-3.5 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-center justify-between">
+            <span class="text-xs font-bold text-amber-400 flex items-center gap-1.5">
+              <span>🟡</span> ÁP LỰC BIÊN LỢI NHUẬN (20% < D_comp ≤ 34.5%)
+            </span>
+            <span class="text-[11px] text-amber-300 font-semibold">Đã qua bộ lọc 24h</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2.5">
+            <div class="p-2.5 bg-[#080c16] rounded-xl border border-[#1c2742]">
+              <span class="text-[10px] text-slate-400">CK Đối thủ Daily</span>
+              <p class="text-sm font-bold text-amber-400 mt-0.5">26.8% (Giữ vững 36 giờ)</p>
+            </div>
+            <div class="p-2.5 bg-[#080c16] rounded-xl border border-[#1c2742]">
+              <span class="text-[10px] text-slate-400">Khóa Trần Quasure</span>
+              <p class="text-sm font-bold text-blue-400 mt-0.5">≤ 20.0% (Giữ vững)</p>
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <div class="flex items-start gap-2.5 p-2.5 bg-[#161f36]/70 rounded-xl border border-[#222f4d]">
+              <div class="w-6 h-6 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-xs shrink-0">❄️</div>
+              <div class="text-[11px]">
+                <strong class="text-slate-100">1. Khóa giá lẻ Quasure:</strong> Kiên quyết không giảm giá đơn lẻ theo đối thủ.
+              </div>
+            </div>
+            <div class="flex items-start gap-2.5 p-2.5 bg-[#161f36]/70 rounded-xl border border-[#222f4d]">
+              <div class="w-6 h-6 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-xs shrink-0">⚡</div>
+              <div class="text-[11px]">
+                <strong class="text-slate-100">2. Đẩy Combo 3 điều trị:</strong> Nâng AOV từ 113.7k lên 143.7k đ, đưa Net Cash lên 139 (+39%).
+              </div>
+            </div>
+          </div>
+
+          <div class="p-2.5 bg-blue-950/30 rounded-xl border border-blue-500/30 flex justify-between items-center text-[11px]">
+            <span class="text-slate-300">Kỷ luật vận hành:</span>
+            <span class="font-bold text-emerald-400 font-mono">SOP 72h · Tapering 50%/ngày</span>
+          </div>
+        `,
+
+        modal: {
+          level: 'CẢNH BÁO HÀNH ĐỘNG · CẤP ĐỘ VÀNG',
+          title: 'KÍCH HOẠT ĐÈN VÀNG (MARGIN DEFENSE)',
+          iconBox: 'border-amber-500/20 bg-amber-500/10 text-amber-500',
+          desc: 'Đối thủ Nestlé duy trì chiết khấu <strong class="text-amber-400 font-semibold">26.8%</strong> liên tục qua 36 giờ (> ngưỡng 24h). Hệ thống đã mở khóa tác chiến phi giá.',
+          actions: [
+            { icon: '❄️', iconBg: 'bg-blue-500/20 text-blue-400', text: 'Khóa trần chiết khấu đơn chiếc Quasure ở mức ≤ 20%' },
+            { icon: '⚡', iconBg: 'bg-indigo-500/20 text-indigo-400', text: 'Đẩy ưu tiên hiển thị gói Combo 3 để nâng AOV lên 143.7k VNĐ' }
+          ],
+          btnText: '⚡ Kích hoạt Phản công Combo 3',
+          btnClass: 'bg-[#3b82f6] hover:bg-blue-600 text-white'
+        },
+        scatter: [
+          { x: 260, y: 68, size: 28, brand: 'nestle', name: 'Nestlé Boost' },
+          { x: 300, y: 40, size: 22, brand: 'quasure', name: 'Quasure Basic' },
+          { x: 360, y: 50, size: 26, brand: 'nestle', name: 'Nestlé Opti' },
+          { x: 390, y: 62, size: 30, brand: 'quasure', name: 'Quasure Gold' },
+          { x: 420, y: 58, size: 30, brand: 'nestle', name: 'Nestlé Value' },
+          { x: 530, y: 48, size: 24, brand: 'quasure', name: 'Quasure Lite' },
+          { x: 560, y: 44, size: 24, brand: 'nestle', name: 'Nestlé Kid' },
+          { x: 620, y: 76, size: 40, brand: 'quasure', name: 'Quasure Combo 3' },
+          { x: 660, y: 35, size: 20, brand: 'nestle', name: 'Nestlé Pro' },
+          { x: 740, y: 54, size: 32, brand: 'quasure', name: 'Quasure Family' }
+        ],
+        bars: {
+          quasure: [210, 340, 515, 290, 95],
+          nestle: [165, 295, 430, 610, 400]
+        },
+        table: [
+          { rank: 1, name: 'Quasure Combo 3', isCombo: true, brand: 'Quasure', price: '610k', discount: '20%', isRed: false, sold: '74.200', trend: '+12.4%', isUp: true },
+          { rank: 2, name: 'Bộ 3 Sữa Bột Nestlé Nutren Junior', isCombo: false, brand: 'Nestlé', price: '2.500k', discount: '26.8%', isRed: false, sold: '5.000', trend: '+1.2%', isUp: true },
+          { rank: 3, name: 'Quasure Gold 400g', isCombo: false, brand: 'Quasure', price: '385k', discount: '15%', isRed: false, sold: '62.400', trend: '+3.6%', isUp: true },
+          { rank: 4, name: 'Quasure Combo Family', isCombo: true, brand: 'Quasure', price: '720k', discount: '18%', isRed: false, sold: '55.300', trend: '+15.2%', isUp: true }
+        ],
+        compSub: 'Kịch bản Đèn Vàng: Đối thủ ép giá 26.8% kéo dài trên 24h → Phản công phi giá bằng gói Combo 3.',
+        boostDisc: '26.8% (Holding >24h)',
+        boostGai: 'Tiệm cận ngưỡng 34.5%',
+        rivalDisc: '28.5%',
+        qVol: '101.468 hộp / tháng',
+        bVol: '71.101 hộp / tháng',
+        advVol: 'Gấp 1.4 lần (Lợi thế giá tăng vọt)',
+        qPrice: '52.000 – 410.000 VNĐ',
+        bPrice: '88.000 – 2.799.000 VNĐ',
+        advPrice: 'Chỉ bằng 1/8 chi phí đối thủ',
+        
+        comboSub: 'Đối thủ ép giá: Quasure bảo toàn trần giá 20%, kích hoạt Combo 3 để nâng AOV thêm +26.4%.',
+        aovSingle: '113.739 VNĐ',
+        aovCombo: '143.742 VNĐ',
+        aovGrowth: '+26.4% AOV',
+        kpiRevenue: '214.8M',
+        revSingle: '100 Triệu VNĐ',
+        revCombo: '214.8 Triệu VNĐ (Tăng x2.14)',
+        netSingle: 'Net Cash = 100',
+        netCombo: 'Net Cash = 139 (+39%)',
+        
+        logCountBadge: '2 cảnh báo hoạt động',
+        sidebarLogCount: '2',
+        logs: [
+          { tag: '24H PERSISTENCE CONFIRMED', badge: 'VERIFIED', badgeColor: 'bg-amber-500/20 text-amber-300', icon: '⏱️', iconBg: 'bg-amber-500/10 text-amber-400', title: 'Đối thủ duy trì chiết khấu 26.8% qua 2 chu kỳ quét (36 giờ liên tục).', sub: 'Loại trừ 100% khả năng Flash Sale ảo. Đủ điều kiện xuất quân theo SOP.', time: 'Hôm nay 01:05:00', border: 'border-amber-500/30' },
+          { tag: 'COMBO 3 BUNDLING DISPATCH', badge: 'ACTIVE', badgeColor: 'bg-blue-500/20 text-blue-300', icon: '⚡', iconBg: 'bg-blue-500/10 text-blue-400', title: 'Tự động kích hoạt hiển thị ưu tiên gói Combo 3 trên Shopee Mall.', sub: 'Mục tiêu: Đưa AOV lên 143.7k VNĐ, bảo vệ Net Cash = 139.', time: 'Hôm nay 01:10:00', border: 'border-blue-500/30' }
+        ],
+        compTop5: [
+          { rank: 1, name: 'Bộ 3 Sữa Bột NESTLÉ NUTREN JUNIOR 800g', price: '2.500.554 đ', discount: '26.8%', isHigh: false, sold: '5.000', rev: '12.50 Tỷ VNĐ', threat: 'Ép giá liên tục 36h', isDanger: false },
+          { rank: 2, name: 'Bộ 2 Thùng 36 Hộp Sữa Pha Sẵn NESTLÉ NUTREN', price: '1.675.807 đ', discount: '28.0%', isHigh: false, sold: '2.000', rev: '3.35 Tỷ VNĐ', threat: 'Khuyến mãi dài hạn', isDanger: false },
+          { rank: 3, name: 'Sữa Bột NESTLÉ NUTREN JUNIOR Thụy Sĩ 800g', price: '830.579 đ', discount: '25.5%', isHigh: false, sold: '3.000', rev: '2.49 Tỷ VNĐ', threat: 'Vượt ngưỡng chi trả người già', isDanger: false },
+          { rank: 4, name: 'Thùng 24 Hộp Sữa Pha Sẵn NESTLÉ NUTREN', price: '1.006.994 đ', discount: '27.4%', isHigh: false, sold: '2.000', rev: '2.01 Tỷ VNĐ', threat: 'Giá vượt mốc 1 Triệu VNĐ', isDanger: false },
+          { rank: 5, name: 'Thùng 36 Hộp Sữa Pha Sẵn NESTLÉ NUTREN', price: '850.897 đ', discount: '26.0%', isHigh: false, sold: '2.000', rev: '1.70 Tỷ VNĐ', threat: 'Tạo cơ hội cho Quasure chen chân', isDanger: false }
+        ],
+        radarNestlePts: "150.0,140.0 155.0,148.0 185.0,205.0 120.0,175.0 125.0,148.0",
+        portfolioBubbles: [
+          { name: 'Nutren 800g (3 hộp)', price: 2500, rev: 12.50, size: 36, left: 88, top: 8, color: 'bg-orange-500 border-orange-300' },
+          { name: 'Nutren Thùng 36 (Bộ 2)', price: 1675, rev: 3.35, size: 28, left: 60, top: 40, color: 'bg-emerald-500 border-emerald-300' },
+          { name: 'Nutren Hộp Đơn', price: 830, rev: 2.49, size: 30, left: 30, top: 50, color: 'bg-amber-500 border-amber-300' },
+          { name: 'Nutren Thùng 24', price: 1006, rev: 2.01, size: 24, left: 36, top: 55, color: 'bg-blue-500 border-blue-300' },
+          { name: 'Nutren Thùng 36', price: 850, rev: 1.70, size: 24, left: 32, top: 58, color: 'bg-orange-500 border-orange-300' }
+        ]
+      },
+
+      // 🔴 KỊCH BẢN ĐỎ: SHOCK_PRICE_WAR (TRUST COLLAPSE > 34.5%)
+      red: {
+        pill: 'bg-rose-500/20 text-rose-400 border-rose-500/40',
+        dot: 'bg-rose-400',
+        title: 'Đèn Đỏ',
+        cardTitle: '<span class="w-2.5 h-2.5 rounded-full bg-rose-400 inline-block"></span> Đèn Đỏ',
+        discount: '59.4%',
+        discountSub: '↗ Phá giá sốc vượt ngưỡng 34.5%',
+        tippingPoint: 34.5,
+        kpiRatio: '1 / 3.3x',
+        kpiTipping: '34.5%',
+
+        dailyVelocity: '4.850 hộp / ngày (Thu tóm)',
+        persistenceTime: '48h xả kho cực đoan',
+        persistenceDesc: 'Sụp đổ sản lượng đối thủ, cơ hội vàng',
+        aovVal: '143.7k đ',
+        aovSub: '↗ Quasure thu tóm khách giá chuẩn',
+
+        bossBriefHtml: `
+          <div class="p-3.5 bg-rose-500/10 border border-rose-500/30 rounded-xl flex items-center justify-between">
+            <span class="text-xs font-bold text-rose-400 flex items-center gap-1.5">
+              <span>🔴</span> ĐỐI THỦ PHÁ GIÁ > 34.5% (SỤP ĐỔ NIỀM TIN)
+            </span>
+            <span class="text-[11px] text-rose-300 font-semibold">Cơ hội thu tóm!</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2.5">
+            <div class="p-2.5 bg-[#080c16] rounded-xl border border-[#1c2742]">
+              <span class="text-[10px] text-slate-400">CK Đối thủ Daily</span>
+              <p class="text-sm font-bold text-rose-400 mt-0.5">59.4% (Vượt xa 34.5%)</p>
+            </div>
+            <div class="p-2.5 bg-[#080c16] rounded-xl border border-[#1c2742]">
+              <span class="text-[10px] text-slate-400">Sản lượng Đối thủ</span>
+              <p class="text-sm font-bold text-rose-400 mt-0.5">Lao dốc còn 292 đơn</p>
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <div class="flex items-start gap-2.5 p-2.5 bg-[#161f36]/70 rounded-xl border border-[#222f4d]">
+              <div class="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs shrink-0">🛡️</div>
+              <div class="text-[11px]">
+                <strong class="text-slate-100">1. Cắt 100% trợ giá lẻ:</strong> Không chạy đua hạ giá, tránh bẫy nghi ngờ hàng giả/cận date.
+              </div>
+            </div>
+            <div class="flex items-start gap-2.5 p-2.5 bg-[#161f36]/70 rounded-xl border border-[#222f4d]">
+              <div class="w-6 h-6 rounded-lg bg-rose-500/20 text-rose-400 flex items-center justify-center font-bold text-xs shrink-0">🏥</div>
+              <div class="text-[11px]">
+                <strong class="text-slate-100">2. Phủ bảo chứng y tế:</strong> Dồn ngân sách đẩy Tem Viện Dinh Dưỡng để thu tóm khách hàng tháo chạy từ đối thủ.
+              </div>
+            </div>
+          </div>
+
+          <div class="p-2.5 bg-rose-950/30 rounded-xl border border-rose-500/30 flex justify-between items-center text-[11px]">
+            <span class="text-slate-300">Vận hành SOP:</span>
+            <span class="font-bold text-emerald-400 font-mono">Duy trì 72h · Tapering 50%/ngày</span>
+          </div>
+        `,
+
+        modal: {
+          level: 'CẢNH BÁO HÀNH ĐỘNG · CẤP ĐỘ ĐỎ',
+          title: 'BÁO ĐỘNG ĐÈN ĐỎ (TRUST COLLAPSE)',
+          iconBox: 'border-rose-500/20 bg-rose-500/10 text-rose-500',
+          desc: 'Đối thủ Nestlé chiết khấu <strong class="text-rose-400 font-semibold">59.4%</strong> — rơi thẳng vào vực thẳm sụp đổ niềm tin. Sản lượng đối thủ lao dốc chỉ còn 292 đơn do khách hàng sợ hàng cận date.',
+          actions: [
+            { icon: '🛡️', iconBg: 'bg-emerald-500/20 text-emerald-400', text: 'Tuyệt đối không giảm giá theo đối thủ; giữ vững vị thế y tế' },
+            { icon: '🏥', iconBg: 'bg-rose-500/20 text-rose-400', text: 'Chuyển ngân sách sang truyền thông Tem Viện Dinh Dưỡng & Video Bác sĩ' }
+          ],
+          btnText: '⚡ Kích hoạt Chiến dịch Y Khoa & Thu Tóm',
+          btnClass: 'bg-[#ff4d4f] hover:bg-[#ff3838] text-white'
+        },
+        scatter: [
+          { x: 260, y: 80, size: 34, brand: 'nestle', name: 'Nestlé Boost' },
+          { x: 300, y: 40, size: 22, brand: 'quasure', name: 'Quasure Basic' },
+          { x: 390, y: 75, size: 32, brand: 'nestle', name: 'Nestlé Value' },
+          { x: 620, y: 76, size: 40, brand: 'quasure', name: 'Quasure Combo 3' },
+          { x: 740, y: 54, size: 32, brand: 'quasure', name: 'Quasure Family' }
+        ],
+        bars: {
+          quasure: [180, 290, 520, 240, 60],
+          nestle: [90, 150, 310, 720, 850]
+        },
+        table: [
+          { rank: 1, name: 'Quasure Combo 3', isCombo: true, brand: 'Quasure', price: '610k', discount: '20%', isRed: false, sold: '78.500', trend: '+16.8%', isUp: true },
+          { rank: 2, name: '[Xả Kho] Nestlé Boost Optimum', isCombo: false, brand: 'Nestlé', price: '1.183k', discount: '58.5%', isRed: true, sold: '45', trend: '-98.0%', isUp: false },
+          { rank: 3, name: 'Quasure Combo Family', isCombo: true, brand: 'Quasure', price: '720k', discount: '18%', isRed: false, sold: '61.200', trend: '+18.5%', isUp: true }
+        ],
+        compSub: 'Kịch bản Đèn Đỏ: Đối thủ phá giá cực đoan 50%-60%, sản lượng sụp đổ nghiêm trọng.',
+        boostDisc: '59.4% (Vực thẳm)',
+        boostGai: 'Sụp đổ niềm tin y tế',
+        rivalDisc: '44.7%',
+        qVol: '101.468 hộp / tháng',
+        bVol: '3.580 hộp / tháng (-95%)',
+        advVol: 'Gấp 28.3 lần (Thu tóm toàn diện)',
+        qPrice: '52.000 – 410.000 VNĐ',
+        bPrice: '38.000 – 1.339.000 VNĐ',
+        advPrice: 'Bảo toàn chất lượng y tế',
+        
+        comboSub: 'Kịch bản Phá giá: Quasure kiên định giá tĩnh, thu tóm khách hàng hoang mang bằng bảo chứng y khoa.',
+        aovSingle: '113.739 VNĐ',
+        aovCombo: '143.742 VNĐ',
+        aovGrowth: '+26.4% AOV',
+        kpiRevenue: '214.8M',
+        revSingle: '100 Triệu VNĐ',
+        revCombo: '214.8 Triệu VNĐ (Tăng x2.14)',
+        netSingle: 'Net Cash = 100',
+        netCombo: 'Net Cash = 139 (+39%)',
+        
+        logCountBadge: '3 cảnh báo hoạt động',
+        sidebarLogCount: '3',
+        logs: [
+          { tag: 'RED ALERT DISPATCH', badge: 'CRITICAL', badgeColor: 'bg-rose-500/20 text-rose-300', icon: '⚠️', iconBg: 'bg-rose-500/10 text-rose-400', title: 'Đối thủ Nestlé chiết khấu 59.4% (> 34.5%). Sản lượng rơi từ 90k về 292 đơn.', sub: 'Cắt 100% trợ giá đơn chiếc; dồn ngân sách phủ Tem Viện Dinh Dưỡng & Doctor Video.', time: 'Hôm nay 01:02:15', border: 'border-rose-500/30' },
+          { tag: 'SOP 72H LOCK', badge: 'ENFORCED', badgeColor: 'bg-blue-500/20 text-blue-300', icon: '🛡️', iconBg: 'bg-blue-500/10 text-blue-400', title: 'Khóa chiến dịch tối thiểu 72 giờ và kích hoạt giao thức rút lui Tapering 50%/ngày.', sub: 'Bảo toàn tuyệt đối vốn lưu động và dòng tiền thuần của doanh nghiệp.', time: 'Hôm nay 01:05:00', border: 'border-blue-500/30' }
+        ],
+        compTop5: [
+          { rank: 1, name: 'Bộ 3 Sữa Bột NESTLÉ BOOST OPTIMUM Singapore 400g', price: '1.183.153 đ', discount: '58.5%', isHigh: true, sold: '45', rev: '53.2 Triệu VNĐ', threat: 'Sản lượng sụt giảm -98% do nghi hàng giả', isDanger: true },
+          { rank: 2, name: 'Bộ 3 Sữa Bột NESTLÉ NUTREN JUNIOR Thụy Sĩ 800g', price: '1.339.371 đ', discount: '54.7%', isHigh: true, sold: '33', rev: '44.2 Triệu VNĐ', threat: 'Mất hoàn toàn biên lợi nhuận gộp', isDanger: true },
+          { rank: 3, name: '[MỚI] Bộ 4 Sữa Bột NESTLÉ BOOST GLUCOSE CONTROL', price: '1.143.291 đ', discount: '54.6%', isHigh: true, sold: '36', rev: '41.2 Triệu VNĐ', threat: 'Khách tiểu đường bỏ chạy sang Quasure', isDanger: true },
+          { rank: 4, name: 'Bộ 3 Sữa Bột NESTLÉ NUTREN JUNIOR Thụy Sĩ 800g', price: '1.101.233 đ', discount: '58.6%', isHigh: true, sold: '34', rev: '37.4 Triệu VNĐ', threat: 'Định vị cao cấp sụp đổ', isDanger: true },
+          { rank: 5, name: 'Bộ 3 Sữa Bột NESTLÉ NUTREN JUNIOR Thụy Sĩ 800g', price: '1.155.788 đ', discount: '59.6%', isHigh: true, sold: '31', rev: '35.8 Triệu VNĐ', threat: 'Chạm vực thẳm sụp đổ uy tín', isDanger: true }
+        ],
+        radarNestlePts: "150.0,145.0 152.0,149.0 165.0,185.0 125.0,165.0 140.0,145.0",
+        portfolioBubbles: [
+          { name: 'Boost Optimum (Bộ 3)', price: 1183, rev: 0.053, size: 16, left: 42, top: 85, color: 'bg-rose-500 border-rose-300' },
+          { name: 'Nutren 800g (Bộ 3)', price: 1339, rev: 0.044, size: 16, left: 48, top: 86, color: 'bg-rose-500 border-rose-300' },
+          { name: 'Boost Glucose Control (Bộ 4)', price: 1143, rev: 0.041, size: 16, left: 40, top: 87, color: 'bg-rose-500 border-rose-300' },
+          { name: 'Nutren 800g (Bộ 3 - Variant 2)', price: 1101, rev: 0.037, size: 14, left: 39, top: 88, color: 'bg-rose-500 border-rose-300' },
+          { name: 'Nutren 800g (Bộ 3 - Variant 3)', price: 1155, rev: 0.035, size: 14, left: 41, top: 89, color: 'bg-rose-500 border-rose-300' }
+        ]
+      }
+    };
+
+    let currentScenario = 'yellow';
+    let isDarkMode = true;
+
+    function toggleTheme() {
+      isDarkMode = !isDarkMode;
+      const body = document.getElementById('app-body');
+      const iconSun = document.getElementById('theme-icon-sun');
+      const iconMoon = document.getElementById('theme-icon-moon');
+
+      if (isDarkMode) {
+        body.classList.remove('light-theme');
+        document.documentElement.classList.add('dark');
+        iconSun.classList.remove('hidden');
+        iconMoon.classList.add('hidden');
+      } else {
+        body.classList.add('light-theme');
+        document.documentElement.classList.remove('dark');
+        iconSun.classList.add('hidden');
+        iconMoon.classList.remove('hidden');
+      }
+    }
+
+    function toggleNotifDropdown() {
+      const dropdown = document.getElementById('notif-dropdown');
+      const dot = document.getElementById('notif-red-dot');
+      if (dropdown.classList.contains('hidden')) {
+        dropdown.classList.remove('hidden');
+        if (dot) dot.classList.add('hidden');
+      } else {
+        dropdown.classList.add('hidden');
+      }
+    }
+
+    document.addEventListener('click', function(e) {
+      const dropdown = document.getElementById('notif-dropdown');
+      const btn = document.getElementById('btn-notif');
+      if (dropdown && !dropdown.contains(e.target) && !btn.contains(e.target)) {
+        dropdown.classList.add('hidden');
+      }
+    });
+
+    function setScenario(sc) {
+      currentScenario = sc;
+      const data = scenarioData[sc];
+
+      // Toolbar Buttons
+      ['green', 'yellow', 'red'].forEach(k => {
+        const btn = document.getElementById('btn-' + k);
+        if (k === sc) {
+          btn.className = `px-3 py-1 text-xs font-semibold rounded-lg ${
+            k === 'green' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' :
+            k === 'yellow' ? 'bg-[#b45309]/30 text-amber-400 border border-amber-500/40' :
+            'bg-rose-500/20 text-rose-400 border border-rose-500/40'
+          } transition-smooth`;
+        } else {
+          btn.className = 'px-3 py-1 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-smooth';
+        }
+      });
+
+      // Badges
+      const titlePill = document.getElementById('title-status-pill');
+      titlePill.className = `px-2.5 py-0.5 text-xs font-bold rounded-full ${data.pill} flex items-center gap-1.5`;
+      titlePill.innerHTML = `<span class="w-1.5 h-1.5 rounded-full ${data.dot}"></span> ${data.title}`;
+
+      const sidePill = document.getElementById('sidebar-status-pill');
+      sidePill.className = `text-[11px] font-bold ${sc === 'red' ? 'text-rose-400' : sc === 'yellow' ? 'text-amber-400' : 'text-emerald-400'} flex items-center gap-1.5`;
+      sidePill.innerHTML = `<span class="w-1.5 h-1.5 rounded-full ${data.dot}"></span> ${data.title}`;
+      document.getElementById('sidebar-status-desc').textContent = `${data.sidebarLogCount} cảnh báo hành động đang chờ xử lý.`;
+
+      // Cập nhật Thẻ Chỉ Đạo Cho Sếp
+      document.getElementById('notif-content-boss').innerHTML = data.bossBriefHtml;
+      const dot = document.getElementById('notif-red-dot');
+      if (dot) dot.classList.remove('hidden');
+
+      const headerDot = document.getElementById('notif-header-dot');
+      if (headerDot) {
+        headerDot.className = `w-2.5 h-2.5 rounded-full ${sc === 'red' ? 'bg-rose-500 shadow-[0_0_8px_#f43f5e]' : sc === 'yellow' ? 'bg-amber-400 shadow-[0_0_8px_#fbbf24]' : 'bg-emerald-400 shadow-[0_0_8px_#34d399]'} animate-pulse`;
+      }
+
+      // Cập nhật Khung Đối Chiếu (Dual-Timeframe Anchor)
+      document.getElementById('anchor-tipping').textContent = data.kpiTipping;
+      document.getElementById('anchor-daily-velocity').textContent = data.dailyVelocity;
+      document.getElementById('anchor-persistence-time').textContent = data.persistenceTime;
+      document.getElementById('anchor-persistence-desc').textContent = data.persistenceDesc;
+
+      // Tab 1: Radar Metric Cards
+      document.getElementById('card-aov-val').textContent = data.aovVal;
+      document.getElementById('card-aov-sub').textContent = data.aovSub;
+      document.getElementById('card-discount-val').textContent = data.discount;
+      document.getElementById('card-discount-sub').textContent = data.discountSub;
+      document.getElementById('card-alert-title').innerHTML = data.cardTitle;
+      renderScatterPlot(data.scatter);
+      renderBarChart(data.bars);
+      renderTable(data.table);
+
+      // Tab 2: Competitor Analysis
+      document.getElementById('comp-subtext').textContent = data.compSub;
+      document.getElementById('comp-card-boost-disc').textContent = data.boostDisc;
+      document.getElementById('comp-card-boost-gai').textContent = data.boostGai;
+      document.getElementById('comp-card-rival-disc').textContent = data.rivalDisc;
+      document.getElementById('comp-kpi-ratio').textContent = data.kpiRatio;
+      document.getElementById('comp-kpi-tipping').textContent = data.kpiTipping;
+
+      // Update Radar SVG Polygon
+      const radarPolygon = document.getElementById('radar-nestle-polygon');
+      if (radarPolygon) radarPolygon.setAttribute('points', data.radarNestlePts);
+
+      // Update Portfolio Bubble Chart
+      const bubbleContainer = document.getElementById('comp-portfolio-bubbles');
+      if (bubbleContainer) {
+        bubbleContainer.innerHTML = data.portfolioBubbles.map(b => `
+          <div 
+            class="absolute rounded-full border-2 ${b.color} transition-smooth cursor-pointer hover:scale-125 flex items-center justify-center group z-10 shadow-lg"
+            style="left: ${b.left}%; top: ${b.top}%; width: ${b.size}px; height: ${b.size}px;"
+          >
+            <div class="absolute bottom-full mb-1 hidden group-hover:flex flex-col items-center z-30 pointer-events-none">
+              <span class="px-2 py-1 bg-slate-900 text-[10px] font-bold text-white rounded border border-slate-700 whitespace-nowrap shadow-xl">
+                ${b.name} (${b.price}k đ · ${b.rev}B)
+              </span>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // Render Top 5 Competitors
+      const compBody = document.getElementById('competitor-top5-body');
+      compBody.innerHTML = data.compTop5.map(c => `
+        <tr class="hover:bg-[#12192c]/60 transition-smooth">
+          <td class="px-4 py-3.5 text-center">
+            <span class="w-6 h-6 rounded-full bg-slate-800 text-orange-400 border border-orange-500/30 font-bold inline-flex items-center justify-center text-xs">
+              ${c.rank}
+            </span>
+          </td>
+          <td class="px-4 py-3.5 font-semibold text-slate-100">${c.name}</td>
+          <td class="px-4 py-3.5 font-bold text-white font-mono">${c.price}</td>
+          <td class="px-4 py-3.5 ${c.isHigh ? 'text-rose-400 font-bold' : 'text-slate-300 font-semibold'}">${c.discount}</td>
+          <td class="px-4 py-3.5 font-bold text-slate-100">${c.sold} hộp</td>
+          <td class="px-4 py-3.5 text-slate-300 font-semibold">${c.rev}</td>
+          <td class="px-4 py-3.5 text-right font-semibold ${c.isDanger ? 'text-rose-400' : 'text-amber-400'}">
+            ${c.threat}
+          </td>
+        </tr>
+      `).join('');
+
+      // Tab 3: Combo Strategy
+      document.getElementById('combo-subtext').textContent = data.comboSub;
+      document.getElementById('combo-aov-single').textContent = data.aovSingle;
+      document.getElementById('combo-aov-combo').textContent = data.aovCombo;
+      document.getElementById('combo-aov-growth').textContent = data.aovGrowth;
+      document.getElementById('combo-rev-single').textContent = data.revSingle;
+      document.getElementById('combo-rev-combo').textContent = data.revCombo;
+      document.getElementById('combo-netcash-single').textContent = data.netSingle;
+      document.getElementById('combo-netcash-combo').textContent = data.netCombo;
+      document.getElementById('combo-kpi-growth').textContent = data.aovGrowth;
+      document.getElementById('combo-kpi-revenue').textContent = data.kpiRevenue;
+
+      // Tab 4: Logs
+      document.getElementById('logs-active-badge').textContent = data.logCountBadge;
+      document.getElementById('sidebar-logs-badge').textContent = data.sidebarLogCount;
+      const logsContainer = document.getElementById('logs-container');
+      logsContainer.innerHTML = data.logs.map(l => `
+        <div class="tech-card p-4 rounded-2xl border ${l.border} flex items-center justify-between">
+          <div class="flex items-start gap-3.5">
+            <div class="w-8 h-8 rounded-xl ${l.iconBg} flex items-center justify-center font-bold text-sm shrink-0">${l.icon}</div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-slate-200">[${l.tag}]</span>
+                <span class="text-[10px] ${l.badgeColor} px-2 py-0.2 rounded font-mono">${l.badge}</span>
+              </div>
+              <p class="text-slate-200 mt-1 font-medium">${l.title}</p>
+              <p class="text-[11px] text-slate-400 mt-1">${l.sub}</p>
+            </div>
+          </div>
+          <span class="text-slate-500 font-mono shrink-0 ml-4">${l.time}</span>
+        </div>
+      `).join('');
+
+      // Settings
+      const setTip = document.getElementById('settings-tipping-point');
+      if (setTip) setTip.value = data.tippingPoint;
+    }
+
+    function renderScatterPlot(points) {
+      const container = document.getElementById('scatter-bubbles-container');
+      container.innerHTML = points.map(p => {
+        const left = Math.min(92, Math.max(2, ((p.x - 240) / (760 - 240)) * 92));
+        const top = Math.min(88, Math.max(10, 88 - ((p.y - 28) / (82 - 28)) * 78));
+        const color = p.brand === 'quasure' 
+          ? 'bg-[#4f8df7] border-[#93c5fd] shadow-[0_0_15px_rgba(79,141,247,0.5)]' 
+          : 'bg-[#f97316] border-[#fdba74] shadow-[0_0_15px_rgba(249,115,22,0.5)]';
+
+        return `
+          <div 
+            class="absolute rounded-full border-2 ${color} transition-smooth cursor-pointer hover:scale-125 flex items-center justify-center group z-10"
+            style="left: ${left}%; top: ${top}%; width: ${p.size}px; height: ${p.size}px;"
+          >
+            <div class="absolute bottom-full mb-1 hidden group-hover:flex flex-col items-center z-30 pointer-events-none">
+              <span class="px-2 py-1 bg-slate-900 text-[10px] font-bold text-white rounded border border-slate-700 whitespace-nowrap shadow-xl">
+                ${p.name}: ${p.x}k đ (${p.y}k sp)
+              </span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderBarChart(bars) {
+      const container = document.getElementById('bar-chart-container');
+      const maxVal = 900;
+      container.innerHTML = bars.quasure.map((qVal, i) => {
+        const nVal = bars.nestle[i];
+        const qH = Math.max(6, (qVal / maxVal) * 100);
+        const nH = Math.max(6, (nVal / maxVal) * 100);
+
+        return `
+          <div class="flex items-end gap-2 h-full group">
+            <div class="w-7 sm:w-9 bg-[#4f8df7] rounded-t-lg transition-smooth relative hover:brightness-110 shadow-[0_0_10px_rgba(79,141,247,0.2)]" style="height: ${qH}%;"></div>
+            <div class="w-7 sm:w-9 bg-[#f97316] rounded-t-lg transition-smooth relative hover:brightness-110 shadow-[0_0_10px_rgba(249,115,22,0.2)]" style="height: ${nH}%;"></div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderTable(rows) {
+      const tbody = document.getElementById('top10-table-body');
+      tbody.innerHTML = rows.map(r => {
+        const rankCircle = r.rank <= 3
+          ? `<span class="w-6 h-6 rounded-full bg-[#3b82f6] text-white font-bold inline-flex items-center justify-center text-xs shadow-sm">${r.rank}</span>`
+          : `<span class="w-6 h-6 rounded-full bg-[#182238] text-slate-400 font-semibold inline-flex items-center justify-center text-xs">${r.rank}</span>`;
+
+        const comboBadge = r.isCombo
+          ? `<span class="ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30">
+               <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg> COMBO
+             </span>`
+          : '';
+
+        const discountClass = r.isRed ? 'text-rose-400 font-bold' : 'text-slate-300';
+        const trendClass = r.isUp ? 'text-emerald-400' : 'text-rose-400';
+        const trendIcon = r.isUp ? '↗' : '↘';
+
+        return `
+          <tr class="hover:bg-[#12192c]/60 transition-smooth">
+            <td class="px-4 py-3.5 text-center">${rankCircle}</td>
+            <td class="px-4 py-3.5 font-semibold text-slate-100 flex items-center">
+              ${r.name} ${comboBadge}
+            </td>
+            <td class="px-4 py-3.5 text-slate-400 font-medium">${r.brand}</td>
+            <td class="px-4 py-3.5 font-semibold text-slate-200">${r.price}</td>
+            <td class="px-4 py-3.5 ${discountClass}">${r.discount}</td>
+            <td class="px-4 py-3.5 font-bold text-slate-100">${r.sold}</td>
+            <td class="px-4 py-3.5 text-right font-semibold ${trendClass}">${trendIcon} ${r.trend}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function switchTab(tabId) {
+      ['radar', 'competitor', 'combo', 'logs', 'settings'].forEach(id => {
+        document.getElementById('view-' + id).classList.add('hidden');
+        const btn = document.getElementById('tab-btn-' + id);
+        btn.className = 'w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-[#131b2e] transition-smooth';
+      });
+
+      document.getElementById('view-' + tabId).classList.remove('hidden');
+      document.getElementById('tab-btn-' + tabId).className = 'w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-[#1a243d] text-blue-400 transition-smooth';
+    }
+
+    function openModal() {
+      const dropdown = document.getElementById('notif-dropdown');
+      if (dropdown) dropdown.classList.add('hidden');
+
+      const data = scenarioData[currentScenario];
+      if (!data.modal) return;
+
+      document.getElementById('modal-level').textContent = data.modal.level;
+      document.getElementById('modal-title').textContent = data.modal.title;
+      document.getElementById('modal-icon-box').className = `w-12 h-12 rounded-2xl border flex items-center justify-center text-xl font-bold ${data.modal.iconBox}`;
+      document.getElementById('modal-desc').innerHTML = data.modal.desc;
+
+      const container = document.getElementById('modal-actions-container');
+      container.innerHTML = data.modal.actions.map(act => `
+        <div class="flex items-center gap-3.5 p-3.5 bg-[#12141a] border border-[#2a344d]/80 rounded-xl">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold shrink-0 ${act.iconBg}">
+            ${act.icon}
+          </div>
+          <span class="text-xs font-semibold text-slate-200">${act.text}</span>
+        </div>
+      `).join('');
+
+      const submitBtn = document.getElementById('modal-submit-btn');
+      submitBtn.textContent = data.modal.btnText;
+      submitBtn.className = `px-5 py-2.5 text-xs font-bold rounded-xl shadow-lg transition-smooth flex items-center gap-1.5 ${data.modal.btnClass}`;
+
+      document.getElementById('action-modal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('action-modal').classList.add('hidden');
+    }
+
+    function executeCampaign() {
+      closeModal();
+      const toast = document.getElementById('toast');
+      toast.classList.remove('hidden');
+      toast.classList.add('flex');
+      setTimeout(() => {
+        toast.classList.add('hidden');
+        toast.classList.remove('flex');
+      }, 4000);
+    }
+
+    function refreshDataAnimation() {
+      const icon = document.getElementById('refresh-icon');
+      icon.classList.add('animate-spin');
+      setTimeout(() => {
+        icon.classList.remove('animate-spin');
+        setScenario(currentScenario);
+      }, 500);
+    }
+
+    // Khởi chạy mặc định Kịch bản Vàng (shock_inflation)
+    setScenario('yellow');
+  </script>
+</body>
+</html>
